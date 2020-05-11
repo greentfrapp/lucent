@@ -1,2 +1,6 @@
-# lucent
-Lucid library adapted for PyTorch
+![](images/lucent_header.png)
+
+# Lucent
+
+Lucid library adapted for PyTorch.
+
