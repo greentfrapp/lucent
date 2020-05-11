@@ -2,5 +2,5 @@
 
 # Lucent
 
-Lucid library adapted for PyTorch.
+[Lucid](https://github.com/tensorflow/lucid) library adapted for PyTorch.
 
