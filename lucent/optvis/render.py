@@ -63,12 +63,12 @@ class ModuleHook():
         self.hook.remove()
 
 def hook_model(model, t_image):
-    features = {}
-    for name, layer in dict(model.named_children()).items():
+    features = OrderedDict()
+    for name, layer in OrderedDict(model.named_children()).items():
         features[name] = ModuleHook(layer)
     def T(layer):
         if layer == "input": return t_image()
-        if layer == "labels": return features["fc"].features
+        if layer == "labels": return list(features.values())[-1].features
         return features[layer].features
     return T
 
