@@ -20,8 +20,6 @@ def jitter(d):
     return inner
 
 def compose(transforms):
-    if transforms is None:
-        return lambda x: x
     def inner(x):
         for transform in transforms:
             x = transform(x)

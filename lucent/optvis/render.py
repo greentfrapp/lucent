@@ -14,6 +14,7 @@ def render_vis(model, objective_f, param_f, optimizer,
                verbose=False, relu_gradient_override=True, use_fixed_seed=False,
                save_image=False, image_name=None):
     
+    transforms = transforms or [transform.jitter(8)]
     transform_f = transform.compose(transforms)
     T = hook_model(model, param_f)
     objective_f = objectives.as_objective(objective_f)
