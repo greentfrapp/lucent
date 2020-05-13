@@ -11,7 +11,7 @@ from lucent.optvis import objectives, param, transform
 
 def render_vis(model, objective_f, param_f, optimizer,
                transforms=None, thresholds=(512,), print_objectives=None,
-               verbose=True, relu_gradient_override=True, use_fixed_seed=False,
+               verbose=False, relu_gradient_override=True, use_fixed_seed=False,
                save_image=False, image_name=None):
     
     transform_f = transform.compose(transforms)
@@ -19,6 +19,7 @@ def render_vis(model, objective_f, param_f, optimizer,
     objective_f = objectives.as_objective(objective_f)
 
     if verbose:
+        model(transform_f(param_f()))
         print("Initial loss: {:.3f}".format(objective_f(T)))
 
     for i in tqdm(range(max(thresholds)+1)):
