@@ -29,9 +29,9 @@ def main():
         lr = 5e-2
         obj = "mixed4a:476"
 
-    scaled_image = lambda: image() * 255
+    scaled_image = lambda: image() * 255 # InceptionV1 takes [0, 255] input
     optimizer = torch.optim.Adam(params, lr=lr)
-    render.render_vis(model, obj, scaled_image, optimizer)
+    render.render_vis(model, obj, scaled_image, optimizer, thresholds=(512,))
 
 
 if __name__ == "__main__":
