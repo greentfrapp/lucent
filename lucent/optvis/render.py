@@ -1,45 +1,58 @@
-# import torch
-# from torchvision import models
+import torch
+import torch.nn.functional as F
+from torchvision import transforms
 from collections import OrderedDict
 import numpy as np
 from tqdm import tqdm
 from PIL import Image
 
-from lucent.optvis import objectives
+from lucent.optvis import objectives, param, transform
 
 
-def render_vis(model, objective_f, param_f=None, optimizer=None,
+def render_vis(model, objective_f, param_f, optimizer,
                transforms=None, thresholds=(512,), print_objectives=None,
-               verbose=True, relu_gradient_override=True, use_fixed_seed=False):
+               verbose=True, relu_gradient_override=True, use_fixed_seed=False,
+               save_image=False, image_name=None):
     
-    transform_f = make_transform_f(transforms)
-    t_image = param_f
-    T = hook_model(model, t_image)
+    transform_f = transform.compose(transforms)
+    T = hook_model(model, param_f)
     objective_f = objectives.as_objective(objective_f)
 
-    layer = SaveFeatures(dict(model.named_children())["inception4b"])
+    if verbose:
+        print("Initial loss: {:.3f}".format(objective_f(T)))
 
     for i in tqdm(range(max(thresholds)+1)):
         optimizer.zero_grad()
-        model(t_image())
+        model(transform_f(param_f()))
         loss = objective_f(T)
         loss.backward()
         optimizer.step()
+        if verbose and i in thresholds:
+            print("Loss at step {}: {:.3f}".format(i, objective_f(T)))
 
-    view(t_image())
+    if save_image:
+        export(param_f(), image_name)
+    else:
+        view(param_f())
 
-def view(tensor):
+def tensor_to_img_array(tensor):
     image = tensor.cpu().detach().numpy()[0]
     image = np.transpose(image, [1, 2, 0])
-    image = (image * 255).astype(np.uint8)
+    if np.max(image) <= 1: # infer whether to scale
+        image *= 255
+    image = image.astype(np.uint8)
+    return image
+
+def view(tensor):
+    image = tensor_to_img_array(tensor)
     Image.fromarray(image).show()
 
-def make_transform_f(transforms):
-    # Just dummy for now
-    def dummy(tensor): return tensor
-    return dummy
+def export(tensor, image_name=None):
+    image_name = image_name or "image.jpg"
+    image = tensor_to_img_array(tensor)
+    Image.fromarray(image).save(image_name)
 
-class SaveFeatures():
+class ModuleHook():
     def __init__(self, module):
         self.hook = module.register_forward_hook(self.hook_fn)
     def hook_fn(self, module, input, output):
@@ -49,11 +62,9 @@ class SaveFeatures():
         self.hook.remove()
 
 def hook_model(model, t_image):
-    # if t_image_raw is None:
-    #     t_image_raw = t_image
     features = {}
     for name, layer in dict(model.named_children()).items():
-        features[name] = SaveFeatures(layer)
+        features[name] = ModuleHook(layer)
     def T(layer):
         if layer == "input": return t_image()
         if layer == "labels": return features["fc"].features

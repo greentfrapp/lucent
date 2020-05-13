@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from PIL import Image
 
-from lucent.optvis import render
+from lucent.optvis import render, param, transform
 
 
 class composite_activation(torch.nn.Module):
@@ -39,7 +39,7 @@ def image_cppn(size,
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    input_tensor = torch.unsqueeze(torch.stack([x, y], dim=0), dim=0).requires_grad_(True).to(device)
+    input_tensor = torch.unsqueeze(torch.stack([x, y], dim=0), dim=0).to(device)
 
     layers = []
     kernel_size = 1
@@ -68,7 +68,7 @@ def image_cppn(size,
                 torch.nn.init.zeros_(m.bias)
     net.apply(weights_init)
     # Set last conv2d layer's weights to 0
-    # torch.nn.init.zeros_(dict(net.named_children())['conv{}'.format(num_layers - 1)].weight)
+    torch.nn.init.zeros_(dict(net.named_children())['conv{}'.format(num_layers - 1)].weight)
     return net.parameters(), lambda: net(input_tensor)
 
 
@@ -78,9 +78,17 @@ def main():
     model.eval()
     params, image = image_cppn(224)
     optimizer = torch.optim.Adam(params, lr=0.005)
-    
-    render.render_vis(model, "inception4b:87", image, optimizer=optimizer, thresholds=(256,))
+
+    transforms = [transform.jitter(8)]
+
+    # render.render_vis(model, "inception4b:87", image, optimizer=optimizer, thresholds=(256,), transforms=transforms)
     # render.render_vis(model, xor_loss, image, optimizer=optimizer, thresholds=(10,))
+
+    # quit()
+
+    params, image = param.pixel_image(224)
+    optimizer = torch.optim.Adam(params, lr=0.05)
+    render.render_vis(model, "inception4a:68", image, optimizer=optimizer, thresholds=(128,), transforms=transforms)
 
 
 if __name__ == "__main__":

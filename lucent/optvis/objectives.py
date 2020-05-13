@@ -1,7 +1,6 @@
 import torch
 
 
-
 class ModuleHook():
     def __init__(self, module):
         self.hook = module.register_forward_hook(self.hook_fn)
@@ -11,13 +10,11 @@ class ModuleHook():
     def close(self):
         self.hook.remove()
 
-
 def channel(layer, n_channel, batch=None):
     """Visualize a single channel"""
     def inner(T):
         return -T(layer)[:, n_channel].mean()
     return inner
-
 
 def as_objective(obj):
     """Convert obj into Objective class.
