@@ -1,5 +1,39 @@
 import torch
+from decorator import decorator
+from lucent.optvis.objectives_util import _make_arg_str
 
+class Objective(object):
+
+    def __init__(self, objective_func, name="", description=""):
+        self.objective_func = objective_func
+        self.name = name
+        self.description = description
+
+    def __call__(self, T):
+        return self.objective_func(T)
+
+    def __add__(self, other):
+        if isinstance(other, (int, float)):
+            objective_func = lambda T: other + self(T)
+            name = self.name
+            description = self.description
+        else:
+            objective_func = lambda T: self(T) + other(T)
+            name = ", ".join([self.name, other.name])
+            description = "Sum(" + " +\n".join([self.description, other.description]) + ")"
+        return Objective(objective_func, name=name, description=description)
+
+def wrap_objective(require_format=None, handle_batch=False):
+    @decorator
+    def inner(f, *args, **kwds):
+        objective_func = f(*args, **kwds)
+        objective_name = f.__name__
+        args_str = " [" + ", ".join([_make_arg_str(arg) for arg in args]) + "]"
+        description = objective_name.title() + args_str
+
+        return Objective(lambda T: objective_func(T),
+                         objective_name, description)
+    return inner
 
 class ModuleHook():
     def __init__(self, module):
@@ -10,6 +44,7 @@ class ModuleHook():
     def close(self):
         self.hook.remove()
 
+@wrap_objective()
 def channel(layer, n_channel, batch=None):
     """Visualize a single channel"""
     def inner(T):
@@ -25,8 +60,8 @@ def as_objective(obj):
     Returns:
     Objective
     """
-    # if isinstance(obj, Objective):
-    #     return obj
+    if isinstance(obj, Objective):
+        return obj
     if callable(obj):
         return obj
     elif isinstance(obj, str):
