@@ -35,15 +35,6 @@ def wrap_objective(require_format=None, handle_batch=False):
                          objective_name, description)
     return inner
 
-class ModuleHook():
-    def __init__(self, module):
-        self.hook = module.register_forward_hook(self.hook_fn)
-    def hook_fn(self, module, input, output):
-        self.module = module
-        self.features = output
-    def close(self):
-        self.hook.remove()
-
 @wrap_objective()
 def neuron(layer, n_channel, x=None, y=None):
     """Visualize a single neuron of a single channel.
