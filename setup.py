@@ -36,6 +36,7 @@ setup(
     install_requires=[
         "torch",
         "torchvision",
+        "tqdm",
         "numpy",
         "ipython",
         "pillow",
