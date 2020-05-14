@@ -34,6 +34,7 @@ setup(
         "pillow",
         "future",
         "decorator",
+        "python-coveralls",
     ],
     classifiers=[
         "Development Status :: 1 - Planning",
