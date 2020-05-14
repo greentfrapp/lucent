@@ -29,9 +29,18 @@ def main():
         lr = 5e-2
         obj = "mixed4a:476"
 
+    # Following transforms from the Lucid tutorial
+    transforms = [
+        transform.pad(16),
+        transform.jitter(8),
+        transform.random_scale([n/100. for n in range(80, 120)]),
+        transform.random_rotate(list(range(-10,10)) + list(range(-5,5)) + 10*list(range(-2,2))),
+        transform.jitter(2),
+    ]
+
     scaled_image = lambda: image() * 255 # InceptionV1 takes [0, 255] input
     optimizer = torch.optim.Adam(params, lr=lr)
-    render.render_vis(model, obj, scaled_image, optimizer, thresholds=(512,))
+    render.render_vis(model, obj, scaled_image, optimizer, transforms=transforms, thresholds=(512,))
 
 
 if __name__ == "__main__":
