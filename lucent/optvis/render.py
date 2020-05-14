@@ -12,7 +12,7 @@ from lucent.optvis import objectives, param, transform
 def render_vis(model, objective_f, param_f, optimizer,
                transforms=None, thresholds=(512,), print_objectives=None,
                verbose=False, relu_gradient_override=True, use_fixed_seed=False,
-               save_image=False, image_name=None):
+               show_image=True, save_image=False, image_name=None):
     
     transforms = transforms or [transform.jitter(8)]
     transform_f = transform.compose(transforms)
@@ -23,19 +23,25 @@ def render_vis(model, objective_f, param_f, optimizer,
         model(transform_f(param_f()))
         print("Initial loss: {:.3f}".format(objective_f(T)))
 
+    images = []
+
     for i in tqdm(range(max(thresholds)+1)):
         optimizer.zero_grad()
         model(transform_f(param_f()))
         loss = objective_f(T)
         loss.backward()
         optimizer.step()
-        if verbose and i in thresholds:
-            print("Loss at step {}: {:.3f}".format(i, objective_f(T)))
+        if i in thresholds:
+            if verbose:
+                print("Loss at step {}: {:.3f}".format(i, objective_f(T)))
+            images.append(tensor_to_img_array(param_f()))
 
     if save_image:
         export(param_f(), image_name)
-    else:
+    if show_image:
         view(param_f())
+    return images
+
 
 def tensor_to_img_array(tensor):
     image = tensor.cpu().detach().numpy()[0]
