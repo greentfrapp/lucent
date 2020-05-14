@@ -15,6 +15,12 @@ To quote Lucid:
 
 # Usage
 
+Lucent is still in pre-alpha phase and can be installed locally with the following command:
+
+```
+pip install git+https://github.com/greentfrapp/lucent.git
+```
+
 In the spirit of Lucid, get up and running with Lucent immediately, thanks to [Colaboratory](https://colab.research.google.com/notebooks/welcome.ipynb)! 
 
 You can also clone this repository and run the notebook locally with the [Jupyter notebook environment](http://jupyter.org/install.html).
