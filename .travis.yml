@@ -3,5 +3,6 @@ python:
   - "3.6"
 install:
   - pip install torch torchvision
+  - pip install .
 script:
   - pytest
