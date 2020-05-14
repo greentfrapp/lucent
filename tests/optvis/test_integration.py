@@ -21,7 +21,7 @@ def test_integration(decorrelate, fft):
         optimizer=optimizer,
         thresholds=(1, 2),
         verbose=True,
-        show_image=False,
+        show_inline=True,
     )
     start_image, end_image = rendering
 

@@ -7,12 +7,13 @@ from tqdm import tqdm
 from PIL import Image
 
 from lucent.optvis import objectives, param, transform
+from lucent.misc.io import show
 
 
 def render_vis(model, objective_f, param_f, optimizer,
                transforms=None, thresholds=(512,), print_objectives=None,
                verbose=False, relu_gradient_override=True, use_fixed_seed=False,
-               show_image=True, save_image=False, image_name=None):
+               show_image=True, save_image=False, image_name=None, show_inline=False):
     
     transforms = transforms or [transform.jitter(8)]
     transform_f = transform.compose(transforms)
@@ -38,7 +39,9 @@ def render_vis(model, objective_f, param_f, optimizer,
 
     if save_image:
         export(param_f(), image_name)
-    if show_image:
+    if show_inline:
+        show(tensor_to_img_array(param_f()).astype(np.float32) / 255)
+    elif show_image:
         view(param_f())
     return images
 
