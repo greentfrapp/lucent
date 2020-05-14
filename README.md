@@ -5,6 +5,7 @@
 <!--*It's still magic even if you know how it's done. GNU Terry Pratchett*-->
 
 [![Travis build status](https://img.shields.io/travis/greentfrapp/lucent.svg)](https://travis-ci.org/greentfrapp/lucent)
+[![Code coverage](https://img.shields.io/coveralls/github/greentfrapp/lucent.svg)](https://coveralls.io/github/greentfrapp/lucent)
 
 [Lucid](https://github.com/tensorflow/lucid) library adapted for PyTorch.
 
