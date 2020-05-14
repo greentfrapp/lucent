@@ -28,6 +28,7 @@ setup(
     install_requires=[
         "torch",
         "torchvision",
+        "kornia",
         "tqdm",
         "numpy",
         "ipython",
