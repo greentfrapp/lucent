@@ -8,7 +8,7 @@ See the original repository [here](https://github.com/ProGamerGov/pytorch-old-te
 
 ## Instructions
 
-Download the InceptionV1 model file [here](https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip) and extract the `inception5h.pth` file.
+Download the InceptionV1 model file [here](https://github.com/ProGamerGov/pytorch-old-tensorflow-models/raw/master/inception5h.pth).
 
 Then run the following to load the model in `eval` mode.
 

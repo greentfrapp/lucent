@@ -9,7 +9,7 @@ def main():
     model = InceptionV1()
     model.to(device)
     # Path to model, see https://github.com/greentfrapp/lucent/tree/master/lucent/modelzoo
-    modelpath = "inception5h/inception5h.pth"
+    modelpath = "inception5h.pth"
     model.load_state_dict(torch.load(modelpath))
     model.eval()
 
