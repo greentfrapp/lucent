@@ -15,10 +15,9 @@ To quote Lucid:
 
 # Usage
 
-In the spirit of Lucid, get up and running with Lucent immediately! The following notebooks
-run right from your browser, thanks to [Colaboratory](https://colab.research.google.com/notebooks/welcome.ipynb). It's a Jupyter notebook environment that requires no setup to use and runs entirely in the cloud.
+In the spirit of Lucid, get up and running with Lucent immediately, thanks to [Colaboratory](https://colab.research.google.com/notebooks/welcome.ipynb)! 
 
-You can run the notebooks on your local machine, too. Clone the repository and find them in the `notebooks` subfolder. You will need to run a local instance of the [Jupyter notebook environment](http://jupyter.org/install.html) to execute them.
+You can also clone this repository and run the notebook locally with the [Jupyter notebook environment](http://jupyter.org/install.html).
 
 ## Tutorial
 
