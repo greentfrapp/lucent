@@ -18,7 +18,6 @@ def inceptionv1():
     model.eval()
     return model
 
-
 def assert_gradient_descent(objective, model):
     params, image = param.image(224)
     optimizer = torch.optim.Adam(params, lr=0.1)
@@ -35,12 +34,15 @@ def assert_gradient_descent(objective, model):
     end_value = objective_f(T)
     assert start_value > end_value
 
-
 def test_neuron(inceptionv1):
     objective = objectives.neuron("mixed3a_1x1_pre_relu_conv", 0)
     assert_gradient_descent(objective, inceptionv1)
 
-
 def test_channel(inceptionv1):
     objective = objectives.channel("mixed3a_1x1_pre_relu_conv", 0)
+    assert_gradient_descent(objective, inceptionv1)
+
+def test_sum(inceptionv1):
+    channel = lambda n: objectives.channel("mixed4a_pool_reduce_pre_relu_conv", n)
+    objective = channel(21) + channel(32)
     assert_gradient_descent(objective, inceptionv1)
