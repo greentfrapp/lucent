@@ -35,7 +35,7 @@ setup(
         "future",
         "decorator",
         "coverage",
-        "coveralls-python",
+        "coveralls",
     ],
     classifiers=[
         "Development Status :: 1 - Planning",
