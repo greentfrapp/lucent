@@ -17,9 +17,9 @@ def jitter(d):
     return inner
 
 def pad(w, mode="reflect", constant_value=0.5):
+    if mode != "constant":
+        constant_value = 0
     def inner(t_image):
-        if mode != "constant":
-            constant_value = 0
         return F.pad(
             t_image,
             [w]*4,
@@ -46,8 +46,9 @@ def random_rotate(angles, units="degrees"):
         angle = torch.ones(1) * alpha
         scale = torch.ones(1)
         center = torch.ones(1, 2)
-        center[..., 0] = t_image.shape[3] / 2
-        center[..., 1] = t_image.shape[2] / 2
+        center[..., 0] = (t_image.shape[3] - 1) / 2
+        center[..., 1] = (t_image.shape[2] - 1) / 2
+        print(center)
         M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
         _, _, h, w = t_image.shape
         rotated_image = kornia.warp_affine(t_image.float(), M, dsize=(h, w))
@@ -68,5 +69,5 @@ def _rads2angle(angle, units):
     if units.lower() == "degrees":
         angle = angle
     elif units.lower() in ["radians", "rads", "rad"]:
-        angle = 3.14 * angle * 180. / 3.14
+        angle = angle * 180. / np.pi
     return angle
