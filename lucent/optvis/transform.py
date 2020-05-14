@@ -48,7 +48,6 @@ def random_rotate(angles, units="degrees"):
         center = torch.ones(1, 2)
         center[..., 0] = (t_image.shape[3] - 1) / 2
         center[..., 1] = (t_image.shape[2] - 1) / 2
-        print(center)
         M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
         _, _, h, w = t_image.shape
         rotated_image = kornia.warp_affine(t_image.float(), M, dsize=(h, w))
