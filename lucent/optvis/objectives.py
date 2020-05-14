@@ -1,6 +1,6 @@
 import torch
 from decorator import decorator
-from lucent.optvis.objectives_util import _make_arg_str
+from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos
 
 class Objective(object):
 
@@ -43,6 +43,28 @@ class ModuleHook():
         self.features = output
     def close(self):
         self.hook.remove()
+
+@wrap_objective()
+def neuron(layer, n_channel, x=None, y=None):
+    """Visualize a single neuron of a single channel.
+    Defaults to the center neuron. When width and height are even numbers, we
+    choose the neuron in the bottom right of the center 2x2 neurons.
+    Odd width & height:               Even width & height:
+    +---+---+---+                     +---+---+---+---+
+    |   |   |   |                     |   |   |   |   |
+    +---+---+---+                     +---+---+---+---+
+    |   | X |   |                     |   |   |   |   |
+    +---+---+---+                     +---+---+---+---+
+    |   |   |   |                     |   |   | X |   |
+    +---+---+---+                     +---+---+---+---+
+                                      |   |   |   |   |
+                                      +---+---+---+---+
+    """
+    def inner(T):
+        extracted_layer = T(layer)
+        extracted_layer = _extract_act_pos(extracted_layer, x, y)
+        return -extracted_layer[:, n_channel].mean()
+    return inner
 
 @wrap_objective()
 def channel(layer, n_channel, batch=None):
