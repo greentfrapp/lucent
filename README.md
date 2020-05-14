@@ -22,7 +22,7 @@ You can run the notebooks on your local machine, too. Clone the repository and f
 
 ## Tutorial
 
-<a href="images/card_1_tutorial.jpg">
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/tutorial.ipynb">
 <img src="images/card_1_tutorial.jpg" width="500" alt=""></img>
 </a>
 
