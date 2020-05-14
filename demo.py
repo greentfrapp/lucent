@@ -20,7 +20,7 @@ def main():
 
     if CPPN:
         # CPPN parameterization
-        params, image = param.image_cppn(224)
+        params, image = param.cppn(224)
         lr = 5e-3
         # Some objectives work better with CPPN than others
         obj = "mixed4d_3x3_bottleneck_pre_relu_conv:139"
