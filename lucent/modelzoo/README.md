@@ -2,7 +2,7 @@
 
 Currently only has the InceptionV1 model corresponding to that used in Lucid examples.
 
-Credits to ProGamerGov for converting the Tensorflow model to PyTorch!
+Credits to [ProGamerGov](https://github.com/ProGamerGov/) for converting the Tensorflow model to PyTorch!
 
 See the original repository [here](https://github.com/ProGamerGov/pytorch-old-tensorflow-models) and code for helper layers [here](https://github.com/ProGamerGov/neural-dream/blob/master/neural_dream/helper_layers.py).
 

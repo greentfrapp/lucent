@@ -8,6 +8,12 @@ To quote Lucid:
 
 **Lucent is research code, not production code. We provide no guarantee it will work for your use case.**
 
+# Usage
+
+Notebooks will be arriving soon!
+
+In the meantime, checkout [`demo.py`](/demo.py) for the basics.
+
 # Recomended Reading
 
 * [Feature Visualization](https://distill.pub/2017/feature-visualization/)
