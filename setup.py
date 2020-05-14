@@ -3,14 +3,6 @@ from setuptools import setup, find_packages
 
 version = lucent.__version__
 
-# test_deps = ["future", "twine", "pytest", "pytest-mock", "python-coveralls"]
-
-# extras = {
-#     "test": test_deps,
-#     "tf": ["tensorflow>=1.6.0"],
-#     "tf_gpu": ["tensorflow-gpu>=1.6.0"],
-# }
-
 setup(
     name="lucent",
     packages=find_packages(exclude=[]),
@@ -43,9 +35,6 @@ setup(
         "future",
         "decorator",
     ],
-    # setup_requires=["pytest-runner"],
-    # tests_require=test_deps,
-    # extras_require=extras,
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Science/Research",
