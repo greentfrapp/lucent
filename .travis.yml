@@ -4,6 +4,6 @@ python:
 install:
   - pip install .
 script:
-  - coverage run --source . -m pytest
+  - coverage run --source . --omit setup.py -m pytest
 after_success:
   - coveralls
