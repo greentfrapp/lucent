@@ -12,7 +12,13 @@ To quote Lucid:
 
 Notebooks will be arriving soon!
 
-In the meantime, checkout [`demo.py`](/demo.py) for the basics.
+In the meantime, try this.
+
+1. Clone this repository
+2. Follow the instructions in [lucent/modelzoo](/lucent/modelzoo) to download the InceptionV1 model
+3. Unzip the folder to root
+4. Run `python demo.py` to visualize a neuron
+5. Checkout [`demo.py`](/demo.py) for more details!
 
 # Recomended Reading
 
