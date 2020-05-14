@@ -2,6 +2,8 @@
 
 # Lucent
 
+<!--*It's still magic even if you know how it's done. GNU Terry Pratchett*-->
+
 [![Travis build status](https://img.shields.io/travis/tensorflow/lucid.svg)](https://travis-ci.org/tensorflow/lucid)
 
 [Lucid](https://github.com/tensorflow/lucid) library adapted for PyTorch.
