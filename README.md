@@ -15,14 +15,16 @@ To quote Lucid:
 
 # Usage
 
-Notebooks will be arriving soon!
+In the spirit of Lucid, get up and running with Lucent immediately! The following notebooks
+run right from your browser, thanks to [Colaboratory](https://colab.research.google.com/notebooks/welcome.ipynb). It's a Jupyter notebook environment that requires no setup to use and runs entirely in the cloud.
 
-In the meantime, try this.
+You can run the notebooks on your local machine, too. Clone the repository and find them in the `notebooks` subfolder. You will need to run a local instance of the [Jupyter notebook environment](http://jupyter.org/install.html) to execute them.
 
-1. Clone this repository
-2. Follow the instructions in [lucent/modelzoo](/lucent/modelzoo) to download the InceptionV1 model
-3. Run `python demo.py` to visualize a neuron
-4. Check out [`demo.py`](/demo.py) for more details!
+## Tutorial
+
+<a href="images/card_1_tutorial.jpg">
+<img src="images/card_1_tutorial.jpg" width="500" alt=""></img>
+</a>
 
 # Recomended Reading
 
