@@ -35,6 +35,10 @@ setup(
         "pillow",
         "future",
         "decorator",
+    ],
+    tests_require=[
+        "pytest",
+        "pytest-mock",
         "coverage",
         "coveralls",
     ],
