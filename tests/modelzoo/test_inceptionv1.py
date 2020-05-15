@@ -1,7 +1,7 @@
 import pytest
 
 import torch
-from lucent.modelzoo import InceptionV1
+from lucent.modelzoo import inceptionv1
 
 important_layer_names = [
     "mixed3a",
@@ -16,8 +16,8 @@ important_layer_names = [
 ]
 
 
-def test_InceptionV1_graph_import():
-    model = InceptionV1()
+def test_inceptionv1_graph_import():
+    model = inceptionv1()
     layer_names = list(dict(model.named_children()).keys())
     for layer_name in important_layer_names:
         assert layer_name in layer_names

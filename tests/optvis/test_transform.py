@@ -63,3 +63,13 @@ def test_random_rotate_odd_size():
         [[1, 1, 1], [0, 0, 0], [0, 0, 0]],
         [[1, 1, 1], [0, 0, 0], [0, 0, 0]]
     ]]).to(device)))
+
+def test_normalize():
+    normalize = transform.normalize()
+    tensor = torch.zeros(1, 3, 1, 1).to(device)
+    print(normalize(tensor))
+    assert torch.allclose(normalize(tensor), torch.tensor([[
+        [[-0.485/0.229]],
+        [[-0.456/0.224]],
+        [[-0.406/0.225]]
+    ]]).to(device))

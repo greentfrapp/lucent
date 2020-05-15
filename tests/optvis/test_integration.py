@@ -2,15 +2,14 @@ import pytest
 
 import torch
 from lucent.optvis import objectives, param, render, transform
-from lucent.modelzoo import InceptionV1
+from lucent.modelzoo import inceptionv1
 
 
 @pytest.mark.parametrize("decorrelate", [True, False])
 @pytest.mark.parametrize("fft", [True, False])
 def test_integration(decorrelate, fft):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = InceptionV1().to(device)
-    model.eval()
+    model = inceptionv1().to(device).eval()
     obj = "mixed3a_1x1_pre_relu_conv:0"
     params, image = param.image(224, decorrelate=decorrelate, fft=fft)
     optimizer = torch.optim.Adam(params, lr=0.1)

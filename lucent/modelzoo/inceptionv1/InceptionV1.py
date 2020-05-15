@@ -35,7 +35,7 @@ from lucent.modelzoo.inceptionv1 import helper_layers
 
 class InceptionV1(nn.Module):
 
-    def __init__(self):
+    def __init__(self, pretrained=False, modelpath="inception5h.pth"):
         super(InceptionV1, self).__init__()
         self.conv2d0_pre_relu_conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(7, 7), stride=(2, 2), groups=1, bias=True)
         self.conv2d1_pre_relu_conv = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
@@ -96,6 +96,9 @@ class InceptionV1(nn.Module):
         self.mixed5b_5x5_pre_relu_conv = nn.Conv2d(in_channels=48, out_channels=128, kernel_size=(5, 5), stride=(1, 1), groups=1, bias=True)
         self.softmax2_pre_activation_matmul = nn.Linear(in_features = 1024, out_features = 1008, bias = True)
         self.add_layers()
+
+        if pretrained:
+            self.load_state_dict(torch.load(modelpath))
 
     def add_layers(self):
         self.conv2d0 = helper_layers.ReluLayer()
