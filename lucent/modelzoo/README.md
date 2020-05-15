@@ -22,9 +22,9 @@ model = inceptionv1(pretrained=True, modelpath="inception5h.pth")
 model.to(device).eval()
 ```
 
-## Other Models
+## TorchVision Models
 
-Lucent works off the shelf with `torchvisions.models`.
+Lucent works off the shelf with `torchvision.models`.
 
 ```python
 import torch
