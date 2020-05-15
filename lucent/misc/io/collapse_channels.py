@@ -23,17 +23,17 @@ def hue_to_rgb(ang, warp=True):
     """Produce an RGB unit vector corresponding to a hue of a given angle."""
     ang = ang - 360*(ang//360)
     colors = np.asarray([
-            [1,0,0],
-            [1,1,0],
-            [0,1,0],
-            [0,1,1],
-            [0,0,1],
-            [1,0,1],
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0],
+        [0, 1, 1],
+        [0, 0, 1],
+        [1, 0, 1],
     ])
     colors = colors / np.linalg.norm(colors, axis=1, keepdims=True)
     R = 360 / len(colors)
     n = math.floor(ang / R)
-    D = (ang - n*R) / R
+    D = (ang - n * R) / R
 
     if warp:
         # warping the angle away from the primary colors (RGB)
@@ -48,27 +48,26 @@ def hue_to_rgb(ang, warp=True):
     return v / np.linalg.norm(v)
 
 
-def sparse_channels_to_rgb(X):
-    assert (X >= 0).all()
+def sparse_channels_to_rgb(array):
+    assert (array >= 0).all()
 
-    K = X.shape[-1]
+    channels = array.shape[-1]
 
     rgb = 0
-    for i in range(K):
-        ang = 360 * i / K
+    for i in range(channels):
+        ang = 360 * i / channels
         color = hue_to_rgb(ang)
-        color = color[tuple(None for _ in range(len(X.shape)-1))]
-        rgb += X[..., i, None] * color
+        color = color[tuple(None for _ in range(len(array.shape)-1))]
+        rgb += array[..., i, None] * color
 
-    rgb += np.ones(X.shape[:-1])[..., None] * (X.sum(-1) - X.max(-1))[..., None]
+    rgb += np.ones(array.shape[:-1])[..., None] * (array.sum(-1) - array.max(-1))[..., None]
     rgb /= 1e-4 + np.linalg.norm(rgb, axis=-1, keepdims=True)
-    rgb *= np.linalg.norm(X, axis=-1, keepdims=True)
+    rgb *= np.linalg.norm(array, axis=-1, keepdims=True)
 
     return rgb
 
 
-def collapse_channels(X):
-
-    if (X < 0).any():
-        X = np.concatenate([np.maximum(0, X), np.maximum(0, -X)], axis=-1)
-    return sparse_channels_to_rgb(X)
+def collapse_channels(array):
+    if (array < 0).any():
+        array = np.concatenate([np.maximum(0, array), np.maximum(0, -array)], axis=-1)
+    return sparse_channels_to_rgb(array)

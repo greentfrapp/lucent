@@ -1,16 +1,15 @@
-import torch
 from decorator import decorator
 from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos
 
-class Objective(object):
+class Objective():
 
     def __init__(self, objective_func, name="", description=""):
         self.objective_func = objective_func
         self.name = name
         self.description = description
 
-    def __call__(self, T):
-        return self.objective_func(T)
+    def __call__(self, model):
+        return self.objective_func(model)
 
     def __add__(self, other):
         if isinstance(other, (int, float)):
@@ -23,16 +22,14 @@ class Objective(object):
             description = "Sum(" + " +\n".join([self.description, other.description]) + ")"
         return Objective(objective_func, name=name, description=description)
 
-def wrap_objective(require_format=None, handle_batch=False):
+def wrap_objective():
     @decorator
-    def inner(f, *args, **kwds):
-        objective_func = f(*args, **kwds)
-        objective_name = f.__name__
+    def inner(func, *args, **kwds):
+        objective_func = func(*args, **kwds)
+        objective_name = func.__name__
         args_str = " [" + ", ".join([_make_arg_str(arg) for arg in args]) + "]"
         description = objective_name.title() + args_str
-
-        return Objective(lambda T: objective_func(T),
-                         objective_name, description)
+        return Objective(objective_func, objective_name, description)
     return inner
 
 @wrap_objective()
@@ -51,17 +48,17 @@ def neuron(layer, n_channel, x=None, y=None):
                                       |   |   |   |   |
                                       +---+---+---+---+
     """
-    def inner(T):
-        extracted_layer = T(layer)
+    def inner(model):
+        extracted_layer = model(layer)
         extracted_layer = _extract_act_pos(extracted_layer, x, y)
         return -extracted_layer[:, n_channel].mean()
     return inner
 
 @wrap_objective()
-def channel(layer, n_channel, batch=None):
+def channel(layer, n_channel):
     """Visualize a single channel"""
-    def inner(T):
-        return -T(layer)[:, n_channel].mean()
+    def inner(model):
+        return -model(layer)[:, n_channel].mean()
     return inner
 
 def as_objective(obj):
@@ -77,7 +74,7 @@ def as_objective(obj):
         return obj
     if callable(obj):
         return obj
-    elif isinstance(obj, str):
-        layer, n = obj.split(":")
-        layer, n = layer.strip(), int(n)
-        return channel(layer, n)
+    if isinstance(obj, str):
+        layer, chn = obj.split(":")
+        layer, chn = layer.strip(), int(chn)
+        return channel(layer, chn)

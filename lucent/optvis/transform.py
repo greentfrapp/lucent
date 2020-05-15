@@ -67,16 +67,16 @@ def _roundup(value):
 
 def _rads2angle(angle, units):
     if units.lower() == "degrees":
-        angle = angle
-    elif units.lower() in ["radians", "rads", "rad"]:
+        return angle
+    if units.lower() in ["radians", "rads", "rad"]:
         angle = angle * 180. / np.pi
     return angle
 
 def normalize():
     # ImageNet normalization for torchvision models
     # see https://pytorch.org/docs/stable/torchvision/models.html
-    normalize = Normalize(mean=[0.485, 0.456, 0.406],
-                          std=[0.229, 0.224, 0.225])
+    normal = Normalize(mean=[0.485, 0.456, 0.406],
+                       std=[0.229, 0.224, 0.225])
     def inner(t_image):
-        return normalize(t_image[0]).unsqueeze(0)
+        return normal(t_image[0]).unsqueeze(0)
     return inner

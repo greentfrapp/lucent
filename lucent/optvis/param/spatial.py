@@ -22,21 +22,21 @@ def rfft2d_freqs(h, w):
         fx = np.fft.fftfreq(w)[: w // 2 + 1]
     return np.sqrt(fx * fx + fy * fy)
 
-def fft_image(shape, sd=None, decay_power=1, decorrelate=True):
-    batch, ch, h, w = shape
+def fft_image(shape, sd=None, decay_power=1):
+    batch, channels, h, w = shape
     freqs = rfft2d_freqs(h, w)
-    init_val_size = (batch, ch) + freqs.shape + (2,) # 2 for imaginary and real components
+    init_val_size = (batch, channels) + freqs.shape + (2,) # 2 for imaginary and real components
     sd = sd or 0.01
 
     spectrum_real_imag_t = (torch.randn(*init_val_size) * sd).to(device).requires_grad_(True)
-    
+
     scale = 1.0 / np.maximum(freqs, 1.0 / max(w, h)) ** decay_power
-    scale = torch.tensor(scale).float()[None,None,...,None].to(device)
+    scale = torch.tensor(scale).float()[None, None, ..., None].to(device)
 
     def inner():
         scaled_spectrum_t = scale * spectrum_real_imag_t
-        image = torch.irfft(scaled_spectrum_t, 2, normalized=True, signal_sizes=(h,w))
-        image = image[:batch, :ch, :h, :w]
+        image = torch.irfft(scaled_spectrum_t, 2, normalized=True, signal_sizes=(h, w))
+        image = image[:batch, :channels, :h, :w]
         magic = 4.0 # Magic constant from Lucid library; increasing this seems to reduce saturation
         image /= magic
         return image

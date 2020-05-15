@@ -12,15 +12,15 @@ color_mean = [0.48, 0.46, 0.41]
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def _linear_decorrelate_color(t):
-    t_permute = t.permute(0, 2, 3, 1)
+def _linear_decorrelate_color(tensor):
+    t_permute = tensor.permute(0, 2, 3, 1)
     t_permute = torch.matmul(t_permute, torch.tensor(color_correlation_normalized.T).to(device))
-    t = t_permute.permute(0, 3, 1, 2)
-    return t
+    tensor = t_permute.permute(0, 3, 1, 2)
+    return tensor
 
-def to_valid_rgb(t, decorrelate=False):
+def to_valid_rgb(image_f, decorrelate=False):
     def inner():
-        image = t()
+        image = image_f()
         if decorrelate:
             image = _linear_decorrelate_color(image)
         return torch.sigmoid(image)

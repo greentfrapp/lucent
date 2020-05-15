@@ -19,11 +19,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-from io import BytesIO
+# from io import BytesIO
 import base64
+from string import Template
 import numpy as np
 import IPython.display
-from string import Template
 
 from lucent.misc.io.serialize_array import serialize_array, array_to_jsbuffer
 from lucent.misc.io.collapse_channels import collapse_channels
@@ -59,30 +59,30 @@ def _image_url(array, fmt='png', mode="data", quality=90, domain=None):
 
 # public functions
 
-def _image_html(array, w=None, domain=None, fmt='png'):
+def _image_html(array, width=None, domain=None, fmt='png'):
     url = _image_url(array, domain=domain, fmt=fmt)
     style = "image-rendering: pixelated;"
-    if w is not None:
-        style += "width: {w}px;".format(w=w)
-    return """<img src="{url}" style="{style}">""".format(**locals())
+    if width is not None:
+        style += "width: {width}px;".format(width=width)
+    return """<img src="{url}" style="{style}">""".format(url=url, style=style)
 
-def image(array, domain=None, w=None, format='png', **kwargs):
+def image(array, domain=None, width=None, fmt='png'):
     """Display an image.
 
     Args:
         array: NumPy array representing the image
         fmt: Image format e.g. png, jpeg
         domain: Domain of pixel values, inferred from min & max values if None
-        w: width of output image, scaled using nearest neighbor interpolation.
+        width: width of output image, scaled using nearest neighbor interpolation.
             size unchanged if None
     """
 
     _display_html(
-        _image_html(array, w=w, domain=domain, fmt=format)
+        _image_html(array, width=width, domain=domain, fmt=fmt)
     )
 
 
-def images(arrays, labels=None, domain=None, w=None):
+def images(arrays, labels=None, domain=None, width=None):
     """Display a list of images with optional labels.
 
     Args:
@@ -90,20 +90,20 @@ def images(arrays, labels=None, domain=None, w=None):
         labels: A list of strings to label each image.
             Defaults to show index if None
         domain: Domain of pixel values, inferred from min & max values if None
-        w: width of output image, scaled using nearest neighbor interpolation.
+        width: width of output image, scaled using nearest neighbor interpolation.
             size unchanged if None
     """
 
-    s = '<div style="display: flex; flex-direction: row;">'
+    string = '<div style="display: flex; flex-direction: row;">'
     for i, array in enumerate(arrays):
         label = labels[i] if labels is not None else i
-        img_html = _image_html(array, w=w, domain=domain)
-        s += """<div style="margin-right:10px; margin-top: 4px;">
+        img_html = _image_html(array, width=width, domain=domain)
+        string += """<div style="margin-right:10px; margin-top: 4px;">
                             {label} <br/>
                             {img_html}
-                        </div>""".format(**locals())
-    s += "</div>"
-    _display_html(s)
+                        </div>""".format(label=label, img_html=img_html)
+    string += "</div>"
+    _display_html(string)
 
 
 def show(thing, domain=(0, 1), **kwargs):
@@ -144,18 +144,17 @@ def show(thing, domain=(0, 1), **kwargs):
 
     """
     def collapse_if_needed(arr):
-        K = arr.shape[-1]
-        if K not in [1,3,4]:
+        channels = arr.shape[-1]
+        if channels not in [1, 3, 4]:
             # log.debug("Collapsing %s channels into 3 RGB channels." % K)
             return collapse_channels(arr)
-        else:
-            return arr
+        return arr
 
 
     if isinstance(thing, np.ndarray):
         rank = len(thing.shape)
 
-        if rank in [3,4]:
+        if rank in [3, 4]:
             thing = collapse_if_needed(thing)
 
         if rank == 4:
@@ -314,10 +313,10 @@ def textured_mesh(mesh, texture, background='0xffffff'):
     }
     </script>
     ''').substitute(
-            verts = array_to_jsbuffer(mesh['position'].ravel()),
-            uvs = array_to_jsbuffer(mesh['uv'].ravel()),
-            faces = array_to_jsbuffer(np.uint32(mesh['face'].ravel())),
-            tex_data_url = texture_data_url,
-            background = background,
+        verts=array_to_jsbuffer(mesh['position'].ravel()),
+        uvs=array_to_jsbuffer(mesh['uv'].ravel()),
+        faces=array_to_jsbuffer(np.uint32(mesh['face'].ravel())),
+        tex_data_url=texture_data_url,
+        background=background,
     )
     _display_html(code)
