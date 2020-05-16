@@ -1,3 +1,5 @@
+import torch
+import torch.nn.functional as F
 from decorator import decorator
 from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos
 
@@ -13,14 +15,33 @@ class Objective():
 
     def __add__(self, other):
         if isinstance(other, (int, float)):
-            objective_func = lambda T: other + self(T)
+            objective_func = lambda model: other + self(model)
             name = self.name
             description = self.description
         else:
-            objective_func = lambda T: self(T) + other(T)
+            objective_func = lambda model: self(model) + other(model)
             name = ", ".join([self.name, other.name])
             description = "Sum(" + " +\n".join([self.description, other.description]) + ")"
         return Objective(objective_func, name=name, description=description)
+
+    def __neg__(self):
+        return -1 * self
+
+    def __sub__(self, other):
+        return self + (-1 * other)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            objective_func = lambda model: other * self(model)
+        else:
+            objective_func = lambda model: self(model) * other(model)
+        return Objective(objective_func, name=self.name, description=self.description)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
 def wrap_objective():
     @decorator
@@ -35,9 +56,12 @@ def wrap_objective():
 @wrap_objective()
 def neuron(layer, n_channel, x=None, y=None):
     """Visualize a single neuron of a single channel.
+
     Defaults to the center neuron. When width and height are even numbers, we
     choose the neuron in the bottom right of the center 2x2 neurons.
+
     Odd width & height:               Even width & height:
+
     +---+---+---+                     +---+---+---+---+
     |   |   |   |                     |   |   |   |   |
     +---+---+---+                     +---+---+---+---+
@@ -47,11 +71,12 @@ def neuron(layer, n_channel, x=None, y=None):
     +---+---+---+                     +---+---+---+---+
                                       |   |   |   |   |
                                       +---+---+---+---+
+
     """
     def inner(model):
-        extracted_layer = model(layer)
-        extracted_layer = _extract_act_pos(extracted_layer, x, y)
-        return -extracted_layer[:, n_channel].mean()
+        layer_t = model(layer)
+        layer_t = _extract_act_pos(layer_t, x, y)
+        return -layer_t[:, n_channel].mean()
     return inner
 
 @wrap_objective()
@@ -61,14 +86,47 @@ def channel(layer, n_channel):
         return -model(layer)[:, n_channel].mean()
     return inner
 
+@wrap_objective()
+def diversity(layer):
+    """Encourage diversity between each batch element.
+
+    A neural net feature often responds to multiple things, but naive feature
+    visualization often only shows us one. If you optimize a batch of images,
+    this objective will encourage them all to be different.
+
+    In particular, it calculates the correlation matrix of activations at layer
+    for each image, and then penalizes cossine similarity between them. This is
+    very similar to ideas in style transfer, except we're *penalizing* style
+    similarity instead of encouraging it.
+
+    Args:
+        layer: layer to evaluate activation correlations on.
+
+    Returns:
+        Objective.
+    """
+    def inner(model):
+        layer_t = model(layer)
+        batch, channels, _, _ = layer_t.shape
+        flattened = layer_t.view(batch, channels, -1)
+        grams = torch.matmul(flattened, torch.transpose(flattened, 1, 2))
+        grams = F.normalize(grams, p=2, dim=(1, 2)) 
+        return -sum([ sum([ (grams[i]*grams[j]).sum()
+               for j in range(batch) if j != i])
+               for i in range(batch)]) / batch
+    return inner
+
 def as_objective(obj):
     """Convert obj into Objective class.
+
     Strings of the form "layer:n" become the Objective channel(layer, n).
     Objectives are returned unchanged.
+
     Args:
-    obj: string or Objective.
+        obj: string or Objective.
+
     Returns:
-    Objective
+        Objective
     """
     if isinstance(obj, Objective):
         return obj
