@@ -44,8 +44,8 @@ def render_vis(model, objective_f, param_f, optimizer,
 
 
 def tensor_to_img_array(tensor):
-    image = tensor.cpu().detach().numpy()[0]
-    image = np.transpose(image, [1, 2, 0])
+    image = tensor.cpu().detach().numpy()
+    image = np.transpose(image, [0, 2, 3, 1])
     if np.max(image) <= 1: # infer whether to scale
         image *= 255
     image = image.astype(np.uint8)
@@ -53,11 +53,17 @@ def tensor_to_img_array(tensor):
 
 def view(tensor):
     image = tensor_to_img_array(tensor)
+    assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    if len(image.shape) == 4:
+        image = np.concatenate(image, axis=1)
     Image.fromarray(image).show()
 
 def export(tensor, image_name=None):
     image_name = image_name or "image.jpg"
     image = tensor_to_img_array(tensor)
+    assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    if len(image.shape) == 4:
+        image = np.concatenate(image, axis=1)
     Image.fromarray(image).save(image_name)
 
 class ModuleHook():

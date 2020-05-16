@@ -4,11 +4,12 @@ from lucent.optvis.param.spatial import pixel_image, fft_image
 from lucent.optvis.param.color import to_valid_rgb
 
 
-def image(w, h=None, sd=None, decorrelate=True,
+def image(w, h=None, sd=None, batch=None, decorrelate=True,
           fft=True, alpha=False, channels=None):
     h = h or w
+    batch = batch or 1
     ch = channels or (4 if alpha else 3)
-    shape = [1, ch, h, w]
+    shape = [batch, ch, h, w]
     param_f = fft_image if fft else pixel_image
     params, image_f = param_f(shape, sd=sd)
     if channels:
