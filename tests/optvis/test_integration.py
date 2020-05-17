@@ -13,11 +13,16 @@ def test_integration(decorrelate, fft):
     obj = "mixed3a_1x1_pre_relu_conv:0"
     params, image = param.image(224, decorrelate=decorrelate, fft=fft)
     optimizer = torch.optim.Adam(params, lr=0.1)
+    transforms = [
+        transform.jitter(8),
+        transform.preprocess_inceptionv1(),
+    ]
     rendering = render.render_vis(
         model,
         obj,
         image,
         optimizer=optimizer,
+        transforms=transforms,
         thresholds=(1, 2),
         verbose=True,
         show_inline=True,

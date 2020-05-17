@@ -80,3 +80,10 @@ def normalize():
     def inner(t_image):
         return normal(t_image[0]).unsqueeze(0)
     return inner
+
+def preprocess_inceptionv1():
+    # Original Tensorflow's InceptionV1 model
+    # takes in [-117, 138]
+    # See https://github.com/tensorflow/lucid/blob/master/lucid/modelzoo/other_models/InceptionV1.py#L56
+    # Thanks to ProGamerGov for this!
+    return lambda x: x * 255 - 117
