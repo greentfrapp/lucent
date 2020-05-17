@@ -95,7 +95,7 @@ def diversity(layer):
     this objective will encourage them all to be different.
 
     In particular, it calculates the correlation matrix of activations at layer
-    for each image, and then penalizes cossine similarity between them. This is
+    for each image, and then penalizes cosine similarity between them. This is
     very similar to ideas in style transfer, except we're *penalizing* style
     similarity instead of encouraging it.
 
