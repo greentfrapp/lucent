@@ -2,6 +2,7 @@ from collections import OrderedDict
 import numpy as np
 from tqdm import tqdm
 from PIL import Image
+import torch
 
 from lucent.optvis import objectives, transform
 from lucent.misc.io import show
@@ -13,6 +14,9 @@ def render_vis(model, objective_f, param_f, optimizer,
 
     if transforms is None:
         transforms = [transform.jitter(8)]
+    # Upsample images smaller than 224
+    if param_f().shape[2] < 224:
+        transforms.append(torch.nn.Upsample(size=224, mode='bilinear', align_corners=True))
     transform_f = transform.compose(transforms)
     hook = hook_model(model, param_f)
     objective_f = objectives.as_objective(objective_f)
