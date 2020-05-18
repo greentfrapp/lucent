@@ -24,7 +24,7 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
     optimizer = optimizer(params)
 
     if transforms is None:
-        transforms = transform.standard_transforms
+        transforms = transform.standard_transforms.copy()
 
     if preprocess:
         if model._get_name() == "InceptionV1":
