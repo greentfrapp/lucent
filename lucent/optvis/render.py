@@ -83,8 +83,16 @@ class ModuleHook():
 
 def hook_model(model, t_image):
     features = OrderedDict()
-    for name, layer in OrderedDict(model.named_children()).items():
-        features[name] = ModuleHook(layer)
+
+    # recursive hooking function
+    def hook_layers(net, prefix=[]):
+        if hasattr(net, "_modules"):
+            for name, layer in net._modules.items():
+                features["_".join(prefix+[name])] = ModuleHook(layer)
+                hook_layers(layer, prefix=prefix+[name])
+
+    hook_layers(model)
+
     def hook(layer):
         if layer == "input":
             return t_image()
