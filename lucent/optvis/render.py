@@ -142,6 +142,9 @@ def hook_model(model, image_f):
     def hook_layers(net, prefix=[]):
         if hasattr(net, "_modules"):
             for name, layer in net._modules.items():
+                if layer is None:
+                    # e.g. GoogLeNet's aux1 and aux2 layers
+                    continue
                 features["_".join(prefix+[name])] = ModuleHook(layer)
                 hook_layers(layer, prefix=prefix+[name])
 
