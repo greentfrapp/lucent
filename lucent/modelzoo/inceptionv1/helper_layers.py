@@ -59,6 +59,12 @@ class ReluLayer(nn.Module):
 
 
 class RedirectedReLU(torch.autograd.Function):
+    """
+    A workaround when there is no gradient flow from an initial random input
+    See https://github.com/tensorflow/lucid/blob/master/lucid/misc/redirected_relu_grad.py
+    Note: this means that the gradient is technically "wrong"
+    TODO: the original Lucid library has a more sophisticated way of doing this
+    """
     @staticmethod
     def forward(ctx, input_tensor):
         ctx.save_for_backward(input_tensor)
