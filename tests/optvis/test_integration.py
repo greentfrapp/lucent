@@ -11,18 +11,13 @@ def test_integration(decorrelate, fft):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = inceptionv1().to(device).eval()
     obj = "mixed3a_1x1_pre_relu_conv:0"
-    params, image = param.image(224, decorrelate=decorrelate, fft=fft)
-    optimizer = torch.optim.Adam(params, lr=0.1)
-    transforms = [
-        transform.jitter(8),
-        transform.preprocess_inceptionv1(),
-    ]
+    param_f = lambda: param.image(224, decorrelate=decorrelate, fft=fft)
+    optimizer = lambda params: torch.optim.Adam(params, lr=0.1)
     rendering = render.render_vis(
         model,
         obj,
-        image,
+        param_f,
         optimizer=optimizer,
-        transforms=transforms,
         thresholds=(1, 2),
         verbose=True,
         show_inline=True,

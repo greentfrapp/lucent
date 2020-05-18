@@ -4,46 +4,74 @@ from tqdm import tqdm
 from PIL import Image
 import torch
 
-from lucent.optvis import objectives, transform
+from lucent.optvis import objectives, transform, param
 from lucent.misc.io import show
 
 
-def render_vis(model, objective_f, param_f, optimizer,
-               transforms=None, thresholds=(512,), verbose=False,
+def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None,
+               thresholds=(512,), verbose=False, preprocess=True,
                show_image=True, save_image=False, image_name=None, show_inline=False):
 
+    if param_f is None:
+        param_f = lambda: param.image(224)
+    # param_f is a function that should return two things
+    # params - parameters to update, which we pass to the optimizer
+    # image_f - a function that returns an image as a tensor
+    params, image_f = param_f()
+
+    if optimizer is None:
+        optimizer = lambda params: torch.optim.Adam(params, lr=5e-2)
+    optimizer = optimizer(params)
+
     if transforms is None:
-        transforms = [transform.jitter(8)]
+        transforms = transform.standard_transforms
+
+    if preprocess:
+        if model._get_name() == "InceptionV1":
+            # Original Tensorflow InceptionV1 takes input range [-117, 138]
+            transforms.append(transform.preprocess_inceptionv1())
+        else:
+            # Assume we use normalization for torchvision.models
+            transforms.append(transform.normalize())
+
     # Upsample images smaller than 224
-    if param_f().shape[2] < 224:
+    if image_f().shape[2] < 224:
         transforms.append(torch.nn.Upsample(size=224, mode='bilinear', align_corners=True))
+
     transform_f = transform.compose(transforms)
-    hook = hook_model(model, param_f)
+
+    hook = hook_model(model, image_f)
     objective_f = objectives.as_objective(objective_f)
 
     if verbose:
-        model(transform_f(param_f()))
+        model(transform_f(image_f()))
         print("Initial loss: {:.3f}".format(objective_f(hook)))
 
     images = []
 
-    for i in tqdm(range(max(thresholds)+1)):
-        optimizer.zero_grad()
-        model(transform_f(param_f()))
-        loss = objective_f(hook)
-        loss.backward()
-        optimizer.step()
-        if i in thresholds:
-            if verbose:
-                print("Loss at step {}: {:.3f}".format(i, objective_f(hook)))
-            images.append(tensor_to_img_array(param_f()))
+    try:
+        for i in tqdm(range(1, max(thresholds) + 1)):
+            optimizer.zero_grad()
+            model(transform_f(image_f()))
+            loss = objective_f(hook)
+            loss.backward()
+            optimizer.step()
+            if i in thresholds:
+                if verbose:
+                    print("Loss at step {}: {:.3f}".format(i, objective_f(hook)))
+                images.append(tensor_to_img_array(image_f()))
+    except KeyboardInterrupt:
+        print("Interrupted optimization at step {:d}.".format(i))
+        if verbose:
+            print("Loss at step {}: {:.3f}".format(i, objective_f(hook)))
+        images.append(tensor_to_img_array(image_f()))
 
     if save_image:
-        export(param_f(), image_name)
+        export(image_f(), image_name)
     if show_inline:
-        show(tensor_to_img_array(param_f()).astype(np.float32) / 255)
+        show(tensor_to_img_array(image_f()).astype(np.float32) / 255)
     elif show_image:
-        view(param_f())
+        view(image_f())
     return images
 
 
@@ -81,7 +109,7 @@ class ModuleHook():
     def close(self):
         self.hook.remove()
 
-def hook_model(model, t_image):
+def hook_model(model, image_f):
     features = OrderedDict()
 
     # recursive hooking function
@@ -95,7 +123,7 @@ def hook_model(model, t_image):
 
     def hook(layer):
         if layer == "input":
-            return t_image()
+            return image_f()
         if layer == "labels":
             return list(features.values())[-1].features
         return features[layer].features
