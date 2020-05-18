@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from decorator import decorator
-from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos
+from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos, _T_handle_batch
 
 class Objective():
 
@@ -53,8 +53,11 @@ def wrap_objective():
         return Objective(objective_func, objective_name, description)
     return inner
 
+def handle_batch(batch=None):
+    return lambda f: lambda model: f(_T_handle_batch(model, batch=batch))
+
 @wrap_objective()
-def neuron(layer, n_channel, x=None, y=None):
+def neuron(layer, n_channel, x=None, y=None, batch=None):
     """Visualize a single neuron of a single channel.
 
     Defaults to the center neuron. When width and height are even numbers, we
@@ -73,6 +76,7 @@ def neuron(layer, n_channel, x=None, y=None):
                                       +---+---+---+---+
 
     """
+    @handle_batch(batch)
     def inner(model):
         layer_t = model(layer)
         layer_t = _extract_act_pos(layer_t, x, y)
@@ -80,8 +84,9 @@ def neuron(layer, n_channel, x=None, y=None):
     return inner
 
 @wrap_objective()
-def channel(layer, n_channel):
+def channel(layer, n_channel, batch=None):
     """Visualize a single channel"""
+    @handle_batch(batch)
     def inner(model):
         return -model(layer)[:, n_channel].mean()
     return inner
