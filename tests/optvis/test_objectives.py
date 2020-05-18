@@ -23,7 +23,7 @@ from lucent.optvis import objectives, param, render, transform
 from lucent.modelzoo import inceptionv1
 
 
-NUM_STEPS = 3
+NUM_STEPS = 5
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def inceptionv1_model():
 
 def assert_gradient_descent(objective, model):
     params, image = param.image(224, batch=2)
-    optimizer = torch.optim.Adam(params, lr=0.1)
+    optimizer = torch.optim.Adam(params, lr=0.05)
     T = render.hook_model(model, image)
     objective_f = objectives.as_objective(objective)
     model(image())
@@ -67,7 +67,7 @@ def test_sum(inceptionv1_model):
 
 
 def test_linear_transform(inceptionv1_model):
-    objective = 1 + 100 * -objectives.channel("mixed4a", 0) / 10 - 1
+    objective = 1 + 1 * -objectives.channel("mixed4a", 0) / 1 - 1
     assert_gradient_descent(objective, inceptionv1_model)
 
 

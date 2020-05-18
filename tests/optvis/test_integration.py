@@ -22,16 +22,21 @@ from lucent.optvis import objectives, param, render, transform
 from lucent.modelzoo import inceptionv1
 
 
-@pytest.mark.parametrize("decorrelate", [True, False])
-@pytest.mark.parametrize("fft", [True, False])
-def test_integration(decorrelate, fft):
+@pytest.fixture
+def inceptionv1_model():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = inceptionv1().to(device).eval()
+    return model
+
+
+@pytest.mark.parametrize("decorrelate", [True, False])
+@pytest.mark.parametrize("fft", [True, False])
+def test_integration(inceptionv1_model, decorrelate, fft):
     obj = "mixed3a_1x1_pre_relu_conv:0"
     param_f = lambda: param.image(224, decorrelate=decorrelate, fft=fft)
     optimizer = lambda params: torch.optim.Adam(params, lr=0.1)
     rendering = render.render_vis(
-        model,
+        inceptionv1_model,
         obj,
         param_f,
         optimizer=optimizer,
