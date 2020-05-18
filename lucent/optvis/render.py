@@ -13,7 +13,7 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
                show_image=True, save_image=False, image_name=None, show_inline=False):
 
     if param_f is None:
-        param_f = lambda: param.image(224)
+        param_f = lambda: param.image(128)
     # param_f is a function that should return two things
     # params - parameters to update, which we pass to the optimizer
     # image_f - a function that returns an image as a tensor
@@ -32,6 +32,7 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
             transforms.append(transform.preprocess_inceptionv1())
         else:
             # Assume we use normalization for torchvision.models
+            # See https://pytorch.org/docs/stable/torchvision/models.html
             transforms.append(transform.normalize())
 
     # Upsample images smaller than 224
