@@ -114,6 +114,33 @@ def channel(layer, n_channel, batch=None):
         return -model(layer)[:, n_channel].mean()
     return inner
 
+
+@wrap_objective()
+def channel_interpolate(layer1, n_channel1, layer2, n_channel2):
+    """Interpolate between layer1, n_channel1 and layer2, n_channel2.
+    Optimize for a convex combination of layer1, n_channel1 and
+    layer2, n_channel2, transitioning across the batch.
+    Args:
+    layer1: layer to optimize 100% at batch=0.
+    n_channel1: neuron index to optimize 100% at batch=0.
+    layer2: layer to optimize 100% at batch=N.
+    n_channel2: neuron index to optimize 100% at batch=N.
+    Returns:
+    Objective
+    """
+    def inner(model):
+        batch_n = list(model(layer1).shape)[0]
+        arr1 = model(layer1)[:, n_channel1]
+        arr2 = model(layer2)[:, n_channel2]
+        weights = np.arange(batch_n) / (batch_n - 1)
+        sum_loss = 0
+        for n in range(batch_n):
+            sum_loss -= (1 - weights[n]) * arr1[n].mean()
+            sum_loss -= weights[n] * arr2[n].mean()
+        return sum_loss
+    return inner
+
+
 @wrap_objective()
 def diversity(layer):
     """Encourage diversity between each batch element.
