@@ -1,3 +1,20 @@
+# Copyright 2020 The Lucent Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+from __future__ import absolute_import, division, print_function
+
 from collections import OrderedDict
 import numpy as np
 from tqdm import tqdm
@@ -11,7 +28,6 @@ from lucent.misc.io import show
 def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None,
                thresholds=(512,), verbose=False, preprocess=True,
                show_image=True, save_image=False, image_name=None, show_inline=False):
-
     if param_f is None:
         param_f = lambda: param.image(128)
     # param_f is a function that should return two things
@@ -82,6 +98,7 @@ def tensor_to_img_array(tensor):
     image = np.transpose(image, [0, 2, 3, 1])
     return image
 
+
 def view(tensor):
     image = tensor_to_img_array(tensor)
     assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
@@ -90,6 +107,7 @@ def view(tensor):
     if len(image.shape) == 4:
         image = np.concatenate(image, axis=1)
     Image.fromarray(image).show()
+
 
 def export(tensor, image_name=None):
     image_name = image_name or "image.jpg"
@@ -101,16 +119,21 @@ def export(tensor, image_name=None):
         image = np.concatenate(image, axis=1)
     Image.fromarray(image).save(image_name)
 
+
 class ModuleHook():
+
     def __init__(self, module):
         self.hook = module.register_forward_hook(self.hook_fn)
         self.module = None
         self.features = None
+
     def hook_fn(self, module, input, output):
         self.module = module
         self.features = output
+
     def close(self):
         self.hook.remove()
+
 
 def hook_model(model, image_f):
     features = OrderedDict()

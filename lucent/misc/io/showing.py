@@ -66,6 +66,7 @@ def _image_html(array, width=None, domain=None, fmt='png'):
         style += "width: {width}px;".format(width=width)
     return """<img src="{url}" style="{style}">""".format(url=url, style=style)
 
+
 def image(array, domain=None, width=None, fmt='png'):
     """Display an image.
 
@@ -149,7 +150,6 @@ def show(thing, domain=(0, 1), **kwargs):
             # log.debug("Collapsing %s channels into 3 RGB channels." % K)
             return collapse_channels(arr)
         return arr
-
 
     if isinstance(thing, np.ndarray):
         rank = len(thing.shape)

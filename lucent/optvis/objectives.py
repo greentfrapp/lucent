@@ -1,7 +1,26 @@
+# Copyright 2020 The Lucent Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+from __future__ import absolute_import, division, print_function
+
+import numpy as np
 import torch
 import torch.nn.functional as F
 from decorator import decorator
 from lucent.optvis.objectives_util import _make_arg_str, _extract_act_pos, _T_handle_batch
+
 
 class Objective():
 
@@ -43,6 +62,7 @@ class Objective():
     def __radd__(self, other):
         return self.__add__(other)
 
+
 def wrap_objective():
     @decorator
     def inner(func, *args, **kwds):
@@ -53,8 +73,10 @@ def wrap_objective():
         return Objective(objective_func, objective_name, description)
     return inner
 
+
 def handle_batch(batch=None):
     return lambda f: lambda model: f(_T_handle_batch(model, batch=batch))
+
 
 @wrap_objective()
 def neuron(layer, n_channel, x=None, y=None, batch=None):
@@ -82,6 +104,7 @@ def neuron(layer, n_channel, x=None, y=None, batch=None):
         layer_t = _extract_act_pos(layer_t, x, y)
         return -layer_t[:, n_channel].mean()
     return inner
+
 
 @wrap_objective()
 def channel(layer, n_channel, batch=None):
@@ -120,6 +143,7 @@ def diversity(layer):
                for j in range(batch) if j != i])
                for i in range(batch)]) / batch
     return inner
+
 
 def as_objective(obj):
     """Convert obj into Objective class.

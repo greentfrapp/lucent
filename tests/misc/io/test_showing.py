@@ -15,8 +15,7 @@
 
 """show() smoke tests
 show relies heavily on a notebook environment, so we can only have some smoke
-tests in the test suite. There is also a notebook with tests that you can run
-to cover common scenarios.
+tests in the test suite.
 """
 from __future__ import absolute_import, division, print_function
 
@@ -55,6 +54,7 @@ def test_show_images(mocker):
     assert golden_eye_html[:-1] in html_arg
     # check that label strings are in output
     assert all(label in html_arg for label in labels)
+
 
 def test_show_textured_mesh(mocker):
     mock_html = mocker.patch('IPython.display.HTML')

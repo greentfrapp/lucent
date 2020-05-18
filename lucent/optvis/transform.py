@@ -1,3 +1,20 @@
+# Copyright 2020 The Lucent Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+from __future__ import absolute_import, division, print_function
+
 import torch
 import torch.nn.functional as F
 from torchvision.transforms import Normalize
@@ -17,6 +34,7 @@ def jitter(d):
         return translate(t_image, torch.tensor([[dx, dy]]).float().to(device))
     return inner
 
+
 def pad(w, mode="reflect", constant_value=0.5):
     if mode != "constant":
         constant_value = 0
@@ -29,6 +47,7 @@ def pad(w, mode="reflect", constant_value=0.5):
         )
     return inner
 
+
 def random_scale(scales):
     def inner(t_image):
         scale = np.random.choice(scales)
@@ -39,6 +58,7 @@ def random_scale(scales):
         upsample = torch.nn.Upsample(size=scale_shape, mode='bilinear', align_corners=True)
         return F.pad(upsample(t_image), [pad_y, pad_x]*2)
     return inner
+
 
 def random_rotate(angles, units="degrees"):
     def inner(t_image):
@@ -55,6 +75,7 @@ def random_rotate(angles, units="degrees"):
         return rotated_image
     return inner
 
+
 def compose(transforms):
     def inner(x):
         for transform in transforms:
@@ -62,8 +83,10 @@ def compose(transforms):
         return x
     return inner
 
+
 def _roundup(value):
     return np.ceil(value).astype(int)
+
 
 def _rads2angle(angle, units):
     if units.lower() == "degrees":
@@ -71,6 +94,7 @@ def _rads2angle(angle, units):
     if units.lower() in ["radians", "rads", "rad"]:
         angle = angle * 180. / np.pi
     return angle
+
 
 def normalize():
     # ImageNet normalization for torchvision models
@@ -81,12 +105,14 @@ def normalize():
         return torch.stack([normal(t) for t in t_image])
     return inner
 
+
 def preprocess_inceptionv1():
     # Original Tensorflow's InceptionV1 model
     # takes in [-117, 138]
     # See https://github.com/tensorflow/lucid/blob/master/lucid/modelzoo/other_models/InceptionV1.py#L56
     # Thanks to ProGamerGov for this!
     return lambda x: x * 255 - 117
+
 
 standard_transforms = [
     pad(12, mode="constant", constant_value=.5),

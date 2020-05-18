@@ -27,6 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import absolute_import, division, print_function
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -186,7 +188,6 @@ class InceptionV1(nn.Module):
         self.mixed5b_5x5 = relu()
         self.mixed5b = helper_layers.CatLayer()
         self.softmax2 = helper_layers.SoftMaxLayer()
-
 
     def forward(self, x):
         conv2d0_pre_relu_conv_pad = F.pad(x, (2, 3, 2, 3))

@@ -13,11 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Convert an "image" wtih n channels into 3 RGB channels."""
+"""Convert an "image" with n channels into 3 RGB channels."""
 
+from __future__ import absolute_import, division, print_function
 
 import math
 import numpy as np
+
 
 def hue_to_rgb(ang, warp=True):
     """Produce an RGB unit vector corresponding to a hue of a given angle."""
