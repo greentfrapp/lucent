@@ -56,6 +56,24 @@ class ReluLayer(nn.Module):
         return F.relu(tensor)
 
 
+class RedirectedReLU(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input_tensor):
+        ctx.save_for_backward(input_tensor)
+        return input_tensor.clamp(min=0)
+    @staticmethod
+    def backward(ctx, grad_output):
+        input_tensor, = ctx.saved_tensors
+        grad_input = grad_output.clone()
+        grad_input[input_tensor < 0] = grad_input[input_tensor < 0] * 1e-1
+        return grad_input
+
+
+class RedirectedReluLayer(nn.Module):
+    def forward(self, tensor):
+        return RedirectedReLU.apply(tensor)
+
+
 class SoftMaxLayer(nn.Module):
     def forward(self, tensor, dim=1):
         return F.softmax(tensor, dim=dim)
