@@ -78,7 +78,7 @@ def normalize():
     normal = Normalize(mean=[0.485, 0.456, 0.406],
                        std=[0.229, 0.224, 0.225])
     def inner(t_image):
-        return normal(t_image[0]).unsqueeze(0)
+        return torch.stack([normal(t) for t in t_image])
     return inner
 
 def preprocess_inceptionv1():
