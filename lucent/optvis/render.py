@@ -36,7 +36,8 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
             transforms.append(transform.normalize())
 
     # Upsample images smaller than 224
-    if image_f().shape[2] < 224:
+    image_shape = image_f().shape
+    if image_shape[2] < 224 or image_shape[3] < 224:
         transforms.append(torch.nn.Upsample(size=224, mode='bilinear', align_corners=True))
 
     transform_f = transform.compose(transforms)
@@ -70,7 +71,7 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
     if save_image:
         export(image_f(), image_name)
     if show_inline:
-        show(tensor_to_img_array(image_f()).astype(np.float32) / 255)
+        show(tensor_to_img_array(image_f()))
     elif show_image:
         view(image_f())
     return images
@@ -79,14 +80,13 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
 def tensor_to_img_array(tensor):
     image = tensor.cpu().detach().numpy()
     image = np.transpose(image, [0, 2, 3, 1])
-    if np.max(image) <= 1: # infer whether to scale
-        image *= 255
-    image = image.astype(np.uint8)
     return image
 
 def view(tensor):
     image = tensor_to_img_array(tensor)
     assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    # Change dtype for PIL.Image
+    image = (image * 255).astype(np.uint8)
     if len(image.shape) == 4:
         image = np.concatenate(image, axis=1)
     Image.fromarray(image).show()
@@ -95,6 +95,8 @@ def export(tensor, image_name=None):
     image_name = image_name or "image.jpg"
     image = tensor_to_img_array(tensor)
     assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    # Change dtype for PIL.Image
+    image = (image * 255).astype(np.uint8)
     if len(image.shape) == 4:
         image = np.concatenate(image, axis=1)
     Image.fromarray(image).save(image_name)
