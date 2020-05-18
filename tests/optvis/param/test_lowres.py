@@ -17,25 +17,19 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-import torch
-from lucent.modelzoo import inceptionv1, util
+from lucent.optvis import param
 
 
-important_layer_names = [
-    "mixed3a",
-    "mixed3b",
-    "mixed4a",
-    "mixed4b",
-    "mixed4c",
-    "mixed4d",
-    "mixed4e",
-    "mixed5a",
-    "mixed5b",
-]
-
-
-def test_inceptionv1_graph_import():
-    model = inceptionv1()
-    layer_names = util.get_model_layers(model)
-    for layer_name in important_layer_names:
-        assert layer_name in layer_names
+def test_lowres():
+	# Without offset
+    params, image_f = param.lowres_tensor((6, 3, 128, 128), (1, 3, 64, 64))
+    assert params[0].shape == (1, 3, 64, 64)
+    assert image_f().shape == (6, 3, 128, 128)
+    # With offset as scalar
+    params, image_f = param.lowres_tensor((6, 3, 128, 128), (1, 3, 64, 64), offset=5)
+    assert params[0].shape == (1, 3, 64, 64)
+    assert image_f().shape == (6, 3, 128, 128)
+    # With offset as list
+    params, image_f = param.lowres_tensor((6, 3, 128, 128), (1, 3, 64, 64), offset=[1, False, 1, True])
+    assert params[0].shape == (1, 3, 64, 64)
+    assert image_f().shape == (6, 3, 128, 128)

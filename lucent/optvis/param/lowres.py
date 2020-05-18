@@ -54,13 +54,12 @@ def lowres_tensor(shape, underlying_shape, offset=None, sd=0.01):
             if offset[n] is False:
                 offset[n] = 0
             offset[n] = int(offset[n])
-        padding = [(pad, 0) for pad in offset]
             
     def inner():
         t = resize_bilinear_nd(underlying_t, shape)
         if offset is not None:
             # Actually apply offset by padding and then cropping off the excess.
-            t = F.pad(t, padding, "reflect")
+            t = F.pad(t, offset, "reflect")
             t = t[:shape[0], :shape[1], :shape[2], :shape[3]]
         return t
     return [underlying_t], inner

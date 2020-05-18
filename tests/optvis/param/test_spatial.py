@@ -17,25 +17,20 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-import torch
-from lucent.modelzoo import inceptionv1, util
+from lucent.optvis import param
 
 
-important_layer_names = [
-    "mixed3a",
-    "mixed3b",
-    "mixed4a",
-    "mixed4b",
-    "mixed4c",
-    "mixed4d",
-    "mixed4e",
-    "mixed5a",
-    "mixed5b",
-]
+def test_pixel():
+    shape = (1, 1)
+    params, image_f = param.pixel_image(shape)
+    assert params[0].shape == shape
+    assert image_f().shape == shape
 
 
-def test_inceptionv1_graph_import():
-    model = inceptionv1()
-    layer_names = util.get_model_layers(model)
-    for layer_name in important_layer_names:
-        assert layer_name in layer_names
+def test_fft():
+    shape = (1, 1, 1, 1)
+    params, image_f = param.fft_image(shape)
+    print(params[0].shape)
+    print(image_f().shape)
+    assert params[0].shape == (1, 1, 1, 1, 2)
+    assert image_f().shape == shape

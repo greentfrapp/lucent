@@ -31,7 +31,6 @@ def pixel_image(shape, sd=None):
 # From https://github.com/tensorflow/lucid/blob/master/lucid/optvis/param/spatial.py
 def rfft2d_freqs(h, w):
     """Computes 2D spectrum frequencies."""
-
     fy = np.fft.fftfreq(h)[:, None]
     # when we have an odd input dimension we need to keep one additional
     # frequency and later cut off 1 pixel

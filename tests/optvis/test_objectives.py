@@ -34,7 +34,7 @@ def inceptionv1_model():
 
 
 def assert_gradient_descent(objective, model):
-    params, image = param.image(224)
+    params, image = param.image(224, batch=2)
     optimizer = torch.optim.Adam(params, lr=0.1)
     T = render.hook_model(model, image)
     objective_f = objectives.as_objective(objective)
@@ -63,4 +63,28 @@ def test_channel(inceptionv1_model):
 def test_sum(inceptionv1_model):
     channel = lambda n: objectives.channel("mixed4a_pool_reduce_pre_relu_conv", n)
     objective = channel(21) + channel(32)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_linear_transform(inceptionv1_model):
+    objective = 1 + 100 * -objectives.channel("mixed4a", 0) / 10 - 1
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_mul_div_raises():
+    with pytest.raises(Exception) as excinfo:   
+        objective = objectives.channel("mixed4a", 0) / objectives.channel("mixed4a", 0)
+    assert str(excinfo.value) == "Can only divide by int or float. Received type <class 'lucent.optvis.objectives.Objective'>"
+    with pytest.raises(Exception) as excinfo:   
+        objective = objectives.channel("mixed4a", 0) * objectives.channel("mixed4a", 0)
+    assert str(excinfo.value) == "Can only multiply by int or float. Received type <class 'lucent.optvis.objectives.Objective'>"
+
+
+def test_channel_interpolate(inceptionv1_model):
+    objective = objectives.channel_interpolate("mixed4a", 465, "mixed4a", 460)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_diversity(inceptionv1_model):
+    objective = objectives.channel("mixed4a", 0) - 100 * objectives.diversity("mixed4a")
     assert_gradient_descent(objective, inceptionv1_model)
