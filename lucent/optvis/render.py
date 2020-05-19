@@ -77,7 +77,10 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
             if i in thresholds:
                 if verbose:
                     print("Loss at step {}: {:.3f}".format(i, objective_f(hook)))
-                images.append(tensor_to_img_array(image_f()))
+                    image = tensor_to_img_array(image_f())
+                    if show_inline:
+                        show(image)
+                images.append(image)
     except KeyboardInterrupt:
         print("Interrupted optimization at step {:d}.".format(i))
         if verbose:
