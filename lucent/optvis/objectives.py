@@ -129,12 +129,12 @@ def channel_interpolate(layer1, n_channel1, layer2, n_channel2):
     Optimize for a convex combination of layer1, n_channel1 and
     layer2, n_channel2, transitioning across the batch.
     Args:
-    layer1: layer to optimize 100% at batch=0.
-    n_channel1: neuron index to optimize 100% at batch=0.
-    layer2: layer to optimize 100% at batch=N.
-    n_channel2: neuron index to optimize 100% at batch=N.
+        layer1: layer to optimize 100% at batch=0.
+        n_channel1: neuron index to optimize 100% at batch=0.
+        layer2: layer to optimize 100% at batch=N.
+        n_channel2: neuron index to optimize 100% at batch=N.
     Returns:
-    Objective
+        Objective
     """
     def inner(model):
         batch_n = list(model(layer1).shape)[0]
@@ -146,6 +146,36 @@ def channel_interpolate(layer1, n_channel1, layer2, n_channel2):
             sum_loss -= (1 - weights[n]) * arr1[n].mean()
             sum_loss -= weights[n] * arr2[n].mean()
         return sum_loss
+    return inner
+
+
+@wrap_objective()
+def alignment(layer, decay_ratio=2):
+    """Encourage neighboring images to be similar.
+    When visualizing the interpolation between two objectives, it's often
+    desirable to encourage analogous objects to be drawn in the same position,
+    to make them more comparable.
+    This term penalizes L2 distance between neighboring images, as evaluated at
+    layer.
+    In general, we find this most effective if used with a parameterization that
+    shares across the batch. (In fact, that works quite well by itself, so this
+    function may just be obsolete.)
+    Args:
+        layer: layer to penalize at.
+        decay_ratio: how much to decay penalty as images move apart in batch.
+    Returns:
+        Objective.
+    """
+    def inner(model):
+        batch_n = list(model(layer).shape)[0]
+        layer_t = model(layer)
+        accum = 0
+        for d in [1, 2, 3, 4]:
+            for i in range(batch_n - d):
+                a, b = i, i + d
+                arr_a, arr_b = layer_t[a], layer_t[b]
+                accum += ((arr_a - arr_b) ** 2).mean() / decay_ratio ** float(d)
+        return accum
     return inner
 
 
