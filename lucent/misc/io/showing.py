@@ -320,3 +320,28 @@ def textured_mesh(mesh, texture, background='0xffffff'):
         background=background,
     )
     _display_html(code)
+
+
+def animate_sequence(sequence, domain=(0, 1), fmt='png'):
+    steps, height, width, _ = sequence.shape
+    sequence = np.concatenate(sequence, 1)
+    code = Template('''
+    <style> 
+        #animation {
+            width: ${width}px;
+            height: ${height}px;
+            background: url('$image_url') left center;
+            animation: play 1s steps($steps) infinite alternate;
+        }
+        @keyframes play {
+            100% { background-position: -${sequence_width}px; }
+        }
+    </style><div id='animation'></div>
+    ''').substitute(
+        image_url=_image_url(sequence, domain=domain, fmt=fmt),
+        sequence_width=width*steps,
+        width=width,
+        height=height,
+        steps=steps,
+    )
+    _display_html(code)
