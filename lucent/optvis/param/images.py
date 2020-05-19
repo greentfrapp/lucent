@@ -22,7 +22,7 @@ from lucent.optvis.param.color import to_valid_rgb
 
 
 def image(w, h=None, sd=None, batch=None, decorrelate=True,
-          fft=True, alpha=False, channels=None):
+          fft=True, channels=None):
     h = h or w
     batch = batch or 1
     ch = channels or (4 if alpha else 3)

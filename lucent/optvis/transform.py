@@ -28,19 +28,19 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def jitter(d):
     assert d > 1, "Jitter parameter d must be more than 1, currently {}".format(d)
-    def inner(t_image):
+    def inner(image_t):
         dx = np.random.choice(d)
         dy = np.random.choice(d)
-        return translate(t_image, torch.tensor([[dx, dy]]).float().to(device))
+        return translate(image_t, torch.tensor([[dx, dy]]).float().to(device))
     return inner
 
 
 def pad(w, mode="reflect", constant_value=0.5):
     if mode != "constant":
         constant_value = 0
-    def inner(t_image):
+    def inner(image_t):
         return F.pad(
-            t_image,
+            image_t,
             [w]*4,
             mode=mode,
             value=constant_value,
@@ -49,29 +49,29 @@ def pad(w, mode="reflect", constant_value=0.5):
 
 
 def random_scale(scales):
-    def inner(t_image):
+    def inner(image_t):
         scale = np.random.choice(scales)
-        shp = t_image.shape[2:]
+        shp = image_t.shape[2:]
         scale_shape = [_roundup(scale * d) for d in shp]
         pad_x = max(0, _roundup((shp[1] - scale_shape[1])/2))
         pad_y = max(0, _roundup((shp[0] - scale_shape[0])/2))
         upsample = torch.nn.Upsample(size=scale_shape, mode='bilinear', align_corners=True)
-        return F.pad(upsample(t_image), [pad_y, pad_x]*2)
+        return F.pad(upsample(image_t), [pad_y, pad_x]*2)
     return inner
 
 
 def random_rotate(angles, units="degrees"):
-    def inner(t_image):
-        b, _, h, w = t_image.shape
+    def inner(image_t):
+        b, _, h, w = image_t.shape
         # kornia takes degrees
         alpha = _rads2angle(np.random.choice(angles), units)
         angle = torch.ones(b) * alpha
         scale = torch.ones(b)
         center = torch.ones(b, 2)
-        center[..., 0] = (t_image.shape[3] - 1) / 2
-        center[..., 1] = (t_image.shape[2] - 1) / 2
+        center[..., 0] = (image_t.shape[3] - 1) / 2
+        center[..., 1] = (image_t.shape[2] - 1) / 2
         M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
-        rotated_image = kornia.warp_affine(t_image.float(), M, dsize=(h, w))
+        rotated_image = kornia.warp_affine(image_t.float(), M, dsize=(h, w))
         return rotated_image
     return inner
 
@@ -101,8 +101,8 @@ def normalize():
     # see https://pytorch.org/docs/stable/torchvision/models.html
     normal = Normalize(mean=[0.485, 0.456, 0.406],
                        std=[0.229, 0.224, 0.225])
-    def inner(t_image):
-        return torch.stack([normal(t) for t in t_image])
+    def inner(image_t):
+        return torch.stack([normal(t) for t in image_t])
     return inner
 
 
