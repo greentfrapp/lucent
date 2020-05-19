@@ -98,6 +98,7 @@ def resize_bilinear_nd(t, target_shape):
         # We can then reshape and use torch.nn.Upsample() on the
         # outer two dimensions.
         t_ = t.view(shape_)
+        # transpose [0, 1, 2, 3] to [0, 3, 1, 2]
         t_ = torch.transpose(t_, 1, 3)
         t_ = torch.transpose(t_, 2, 3)
         upsample = torch.nn.Upsample(size=new_shape_[1:3], mode='bilinear', align_corners=True)
