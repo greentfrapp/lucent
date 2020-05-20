@@ -35,9 +35,15 @@ import torch.nn.functional as F
 from lucent.modelzoo.inceptionv1 import helper_layers
 
 
+model_urls = {
+    # InceptionV1 model used in Lucid examples, converted by ProGamerGov
+    'inceptionv1': 'https://github.com/ProGamerGov/pytorch-old-tensorflow-models/raw/master/inception5h.pth',
+}
+
+
 class InceptionV1(nn.Module):
 
-    def __init__(self, pretrained=False, modelpath="inception5h.pth", redirected_ReLU=True):
+    def __init__(self, pretrained=False, progress=True, redirected_ReLU=True):
         super(InceptionV1, self).__init__()
         self.conv2d0_pre_relu_conv = nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(7, 7), stride=(2, 2), groups=1, bias=True)
         self.conv2d1_pre_relu_conv = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=(1, 1), stride=(1, 1), groups=1, bias=True)
@@ -101,7 +107,7 @@ class InceptionV1(nn.Module):
         self.add_layers(redirected_ReLU)
 
         if pretrained:
-            self.load_state_dict(torch.load(modelpath))
+            self.load_state_dict(torch.hub.load_state_dict_from_url(model_urls['inceptionv1'], progress=progress))
 
     def add_layers(self, redirected_ReLU=True):
         if redirected_ReLU:
