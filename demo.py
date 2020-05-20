@@ -1,14 +1,12 @@
 import torch
 
-from lucent.optvis import render, param, transform, objectives
+from lucent.optvis import render, param
 from lucent.modelzoo import inceptionv1
 
 def main():
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # Path to model, see https://github.com/greentfrapp/lucent/tree/master/lucent/modelzoo
-    modelpath = "inception5h.pth"
-    model = inceptionv1(pretrained=True, modelpath=modelpath)
+    model = inceptionv1(pretrained=True)
     model.to(device).eval()
 
     CPPN = False

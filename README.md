@@ -26,27 +26,42 @@ In the spirit of Lucid, get up and running with Lucent immediately, thanks to Go
 
 You can also clone this repository and run the notebooks locally with [Jupyter](http://jupyter.org/install.html).
 
-## Tutorial
+## Quickstart
+
+```
+import torch
+
+from lucent.optvis import render
+from lucent.modelzoo import inceptionv1
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model = inceptionv1(pretrained=True)
+model.to(device).eval()
+
+render.render_vis(model, "mixed4a:476")
+```
+
+## Tutorials
 
 <a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/tutorial.ipynb">
-<img src="images/tutorial_card.jpg" width="500" alt=""></img></a>
+<img src="https://github.com/greentfrapp/lucent/raw/master/images/tutorial_card.jpg" width="500" alt=""></img></a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/modelzoo.ipynb"><img src="images/modelzoo_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/modelzoo.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/modelzoo_card.jpg" width="500" alt=""></img></a>
 
 ## Other Notebooks
 
 Here, we have tried to recreate some of the Lucid notebooks!
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/diversity.ipynb"><img src="images/diversity_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/diversity.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/diversity_card.jpg" width="500" alt=""></img></a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/neuron_interaction.ipynb"><img src="images/neuron_interaction_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/neuron_interaction.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/neuron_interaction_card.jpg" width="500" alt=""></img></a>
 
 <a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/feature_inversion.ipynb">
-<img src="images/feature_inversion_card.jpg" width="500" alt=""></img>
+<img src="https://github.com/greentfrapp/lucent/raw/master/images/feature_inversion_card.jpg" width="500" alt=""></img>
 </a>
 
 <a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/style_transfer.ipynb">
-<img src="images/style_transfer_card.jpg" width="500" alt=""></img>
+<img src="https://github.com/greentfrapp/lucent/raw/master/images/style_transfer_card.jpg" width="500" alt=""></img>
 </a>
 
 # Recomended Reading
@@ -70,4 +85,4 @@ Check out `#proj-lucid` and `#circuits` on the [Distill slack](http://slack.dist
 
 ## License and Disclaimer
 
-You may use this software under the Apache 2.0 License. See [LICENSE](LICENSE).
+You may use this software under the Apache 2.0 License. See [LICENSE](https://github.com/greentfrapp/lucent/blob/master/LICENSE).
