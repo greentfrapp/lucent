@@ -7,11 +7,12 @@
 [![Travis build status](https://img.shields.io/travis/greentfrapp/lucent.svg)](https://travis-ci.org/greentfrapp/lucent)
 [![Code coverage](https://img.shields.io/coveralls/github/greentfrapp/lucent.svg)](https://coveralls.io/github/greentfrapp/lucent)
 
-[Lucid](https://github.com/tensorflow/lucid) library adapted for PyTorch.
+*PyTorch + Lucid = Lucent*
 
-To quote Lucid:
+The wonderful [Lucid](https://github.com/tensorflow/lucid) library adapted for the wonderful PyTorch!
 
-**Lucent is research code, not production code. We provide no guarantee it will work for your use case.**
+**Lucent is not affiliated with Lucid or OpenAI's Clarity team, although we would love to be!**
+Credit is due to the original Lucid authors, we merely adapted the code for PyTorch and we take the blame for all issues and bugs found here.
 
 # Usage
 
@@ -21,14 +22,31 @@ Lucent is still in pre-alpha phase and can be installed locally with the followi
 pip install git+https://github.com/greentfrapp/lucent.git
 ```
 
-In the spirit of Lucid, get up and running with Lucent immediately, thanks to [Colaboratory](https://colab.research.google.com/notebooks/welcome.ipynb)! 
+In the spirit of Lucid, get up and running with Lucent immediately, thanks to Google's [Colab](https://colab.research.google.com/notebooks/welcome.ipynb)! 
 
-You can also clone this repository and run the notebook locally with the [Jupyter notebook environment](http://jupyter.org/install.html).
+You can also clone this repository and run the notebooks locally with [Jupyter](http://jupyter.org/install.html).
 
 ## Tutorial
 
 <a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/tutorial.ipynb">
-<img src="images/card_1_tutorial.jpg" width="500" alt=""></img>
+<img src="images/tutorial_card.jpg" width="500" alt=""></img></a>
+
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/modelzoo.ipynb"><img src="images/modelzoo_card.jpg" width="500" alt=""></img></a>
+
+## Other Notebooks
+
+Here, we have tried to recreate some of the Lucid notebooks!
+
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/diversity.ipynb"><img src="images/diversity_card.jpg" width="500" alt=""></img></a>
+
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/neuron_interaction.ipynb"><img src="images/neuron_interaction_card.jpg" width="500" alt=""></img></a>
+
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/feature_inversion.ipynb">
+<img src="images/feature_inversion_card.jpg" width="500" alt=""></img>
+</a>
+
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/style_transfer.ipynb">
+<img src="images/style_transfer_card.jpg" width="500" alt=""></img>
 </a>
 
 # Recomended Reading
@@ -46,7 +64,7 @@ You can also clone this repository and run the notebook locally with the [Jupyte
 
 # Slack
 
-Check out the Lucid community at `#proj-lucid` on the Distill slack ([join link](http://slack.distill.pub))!
+Check out `#proj-lucid` and `#circuits` on the [Distill slack](http://slack.distill.pub)!
 
 # Additional Information
 
