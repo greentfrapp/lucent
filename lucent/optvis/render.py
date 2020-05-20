@@ -26,7 +26,7 @@ from lucent.misc.io import show
 
 
 def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None,
-               thresholds=(512,), verbose=False, preprocess=True,
+               thresholds=(512,), verbose=False, preprocess=True, progress=True,
                show_image=True, save_image=False, image_name=None, show_inline=False):
     if param_f is None:
         param_f = lambda: param.image(128)
@@ -68,7 +68,7 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
     images = []
 
     try:
-        for i in tqdm(range(1, max(thresholds) + 1)):
+        for i in tqdm(range(1, max(thresholds) + 1), disable=(not progress)):
             optimizer.zero_grad()
             model(transform_f(image_f()))
             loss = objective_f(hook)
