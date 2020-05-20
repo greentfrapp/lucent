@@ -43,6 +43,15 @@ class Objective():
             description = "Sum(" + " +\n".join([self.description, other.description]) + ")"
         return Objective(objective_func, name=name, description=description)
 
+    @staticmethod
+    def sum(objs):
+        objective_func = lambda T: sum([obj(T) for obj in objs])
+        descriptions = [obj.description for obj in objs]
+        description = "Sum(" + " +\n".join(descriptions) + ")"
+        names = [obj.name for obj in objs]
+        name = ", ".join(names)
+        return Objective(objective_func, name=name, description=description)
+
     def __neg__(self):
         return -1 * self
 
@@ -120,6 +129,35 @@ def channel(layer, n_channel, batch=None):
     @handle_batch(batch)
     def inner(model):
         return -model(layer)[:, n_channel].mean()
+    return inner
+
+
+def _torch_blur(tensor, out_c=3):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    depth = tensor.shape[1]
+    weight = np.zeros([depth, depth, out_c, out_c])
+    for ch in range(depth):
+        weight_ch = weight[ch, ch, :, :]
+        weight_ch[ :  ,  :  ] = 0.5
+        weight_ch[1:-1, 1:-1] = 1.0
+    weight_t = torch.tensor(weight).float().to(device)
+    conv_f = lambda t: F.conv2d(t, weight_t, None, 1, 1)
+    return conv_f(tensor) / conv_f(torch.ones_like(tensor))
+
+
+@wrap_objective()
+def blur_input_each_step():
+    """Minimizing this objective is equivelant to blurring input each step.
+    Optimizing (-k)*blur_input_each_step() is equivelant to:
+    input <- (1-k)*input + k*blur(input)
+    An operation that was used in early feature visualization work.
+    See Nguyen, et al., 2015.
+    """
+    def inner(T):
+        t_input = T("input")
+        with torch.no_grad():
+            t_input_blurred = _torch_blur(t_input)
+        return -0.5*torch.sum((t_input - t_input_blurred)**2)
     return inner
 
 

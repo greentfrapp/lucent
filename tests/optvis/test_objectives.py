@@ -67,7 +67,7 @@ def test_channel(inceptionv1_model):
 
 def test_sum(inceptionv1_model):
     channel = lambda n: objectives.channel("mixed4a_pool_reduce_pre_relu_conv", n)
-    objective = channel(21) + channel(32)
+    objective = objectives.Objective.sum([channel(21), channel(32)])
     assert_gradient_descent(objective, inceptionv1_model)
 
 
@@ -85,8 +85,18 @@ def test_mul_div_raises():
     assert str(excinfo.value) == "Can only multiply by int or float. Received type <class 'lucent.optvis.objectives.Objective'>"
 
 
+def test_blur_input_each_step(inceptionv1_model):
+    objective = objectives.blur_input_each_step()
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
 def test_channel_interpolate(inceptionv1_model):
     objective = objectives.channel_interpolate("mixed4a", 465, "mixed4a", 460)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_alignment(inceptionv1_model):
+    objective = objectives.alignment("mixed4a")
     assert_gradient_descent(objective, inceptionv1_model)
 
 
