@@ -1,4 +1,4 @@
-![](images/lucent_header.jpg)
+![](https://github.com/greentfrapp/lucent/raw/master/images/lucent_header.jpg)
 
 # Lucent
 
