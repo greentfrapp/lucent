@@ -19,7 +19,7 @@ Credit is due to the original Lucid authors, we merely adapted the code for PyTo
 Lucent is still in pre-alpha phase and can be installed locally with the following command:
 
 ```
-pip install git+https://github.com/greentfrapp/lucent.git
+pip install torch-lucent
 ```
 
 In the spirit of Lucid, get up and running with Lucent immediately, thanks to Google's [Colab](https://colab.research.google.com/notebooks/welcome.ipynb)! 

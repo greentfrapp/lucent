@@ -3,8 +3,11 @@ from setuptools import setup, find_packages
 
 version = lucent.__version__
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
-    name="lucent",
+    name="torch-lucent",
     packages=find_packages(exclude=[]),
     version=version,
     description=(
@@ -12,6 +15,8 @@ setup(
         "Collection of infrastructure and tools for research in "
         "neural network interpretability."
     ),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="The Lucent Authors",
     author_email="limsweekiat@gmail.com",
     url="https://github.com/greentfrapp/lucent",
@@ -41,7 +46,7 @@ setup(
         "coveralls",
     ],
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
         "License :: OSI Approved :: Apache Software License",
