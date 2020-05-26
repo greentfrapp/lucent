@@ -25,9 +25,22 @@ from lucent.optvis import objectives, transform, param
 from lucent.misc.io import show
 
 
-def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None,
-               thresholds=(512,), verbose=False, preprocess=True, progress=True,
-               show_image=True, save_image=False, image_name=None, show_inline=False):
+def render_vis(
+    model,
+    objective_f,
+    param_f=None,
+    optimizer=None,
+    transforms=None,
+    thresholds=(512,),
+    verbose=False,
+    preprocess=True,
+    progress=True,
+    show_image=True,
+    save_image=False,
+    image_name=None,
+    show_inline=False,
+    fixed_image_size=None,
+):
     if param_f is None:
         param_f = lambda: param.image(128)
     # param_f is a function that should return two things
@@ -53,8 +66,16 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
 
     # Upsample images smaller than 224
     image_shape = image_f().shape
-    if image_shape[2] < 224 or image_shape[3] < 224:
-        transforms.append(torch.nn.Upsample(size=224, mode='bilinear', align_corners=True))
+    if fixed_image_size is not None:
+        new_size = fixed_image_size
+    elif image_shape[2] < 224 or min_image_size[3] < 224:
+        new_size = 224
+    else:
+        new_size = None
+    if new_size:
+        transforms.append(
+            torch.nn.Upsample(size=new_size, mode="bilinear", align_corners=True)
+        )
 
     transform_f = transform.compose(transforms)
 
@@ -66,11 +87,20 @@ def render_vis(model, objective_f, param_f=None, optimizer=None, transforms=None
         print("Initial loss: {:.3f}".format(objective_f(hook)))
 
     images = []
-
     try:
         for i in tqdm(range(1, max(thresholds) + 1), disable=(not progress)):
             optimizer.zero_grad()
-            model(transform_f(image_f()))
+            try:
+                model(transform_f(image_f()))
+            except RuntimeError as ex:
+                if i == 1:
+                    print(
+                        "Some layers could not be computed because the size of the "
+                        "image is not big enough. It is fine, as long as the non"
+                        "computed layers are not used in the objective function"
+                    )
+                    print("Details:")
+                    print(ex)
             loss = objective_f(hook)
             loss.backward()
             optimizer.step()
@@ -104,7 +134,10 @@ def tensor_to_img_array(tensor):
 
 def view(tensor):
     image = tensor_to_img_array(tensor)
-    assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    assert len(image.shape) in [
+        3,
+        4,
+    ], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
     # Change dtype for PIL.Image
     image = (image * 255).astype(np.uint8)
     if len(image.shape) == 4:
@@ -115,7 +148,10 @@ def view(tensor):
 def export(tensor, image_name=None):
     image_name = image_name or "image.jpg"
     image = tensor_to_img_array(tensor)
-    assert len(image.shape) in [3, 4], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
+    assert len(image.shape) in [
+        3,
+        4,
+    ], "Image should have 3 or 4 dimensions, invalid image shape {}".format(image.shape)
     # Change dtype for PIL.Image
     image = (image * 255).astype(np.uint8)
     if len(image.shape) == 4:
@@ -123,8 +159,7 @@ def export(tensor, image_name=None):
     Image.fromarray(image).save(image_name)
 
 
-class ModuleHook():
-
+class ModuleHook:
     def __init__(self, module):
         self.hook = module.register_forward_hook(self.hook_fn)
         self.module = None
@@ -148,8 +183,8 @@ def hook_model(model, image_f):
                 if layer is None:
                     # e.g. GoogLeNet's aux1 and aux2 layers
                     continue
-                features["_".join(prefix+[name])] = ModuleHook(layer)
-                hook_layers(layer, prefix=prefix+[name])
+                features["_".join(prefix + [name])] = ModuleHook(layer)
+                hook_layers(layer, prefix=prefix + [name])
 
     hook_layers(model)
 
@@ -159,4 +194,5 @@ def hook_model(model, image_f):
         if layer == "labels":
             return list(features.values())[-1].features
         return features[layer].features
+
     return hook
