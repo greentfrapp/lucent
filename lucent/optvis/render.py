@@ -68,7 +68,7 @@ def render_vis(
     image_shape = image_f().shape
     if fixed_image_size is not None:
         new_size = fixed_image_size
-    elif image_shape[2] < 224 or min_image_size[3] < 224:
+    elif image_shape[2] < 224 or image_shape[3] < 224:
         new_size = 224
     else:
         new_size = None
