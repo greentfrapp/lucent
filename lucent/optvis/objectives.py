@@ -186,7 +186,7 @@ def direction_neuron(layer_name,
         # breakpoint()
         layer_t = model(layer_name)
         layer_t = _extract_act_pos(layer_t, x, y)
-        return torch.nn.CosineSimilarity(dim=1)(direction.reshape(
+        return -torch.nn.CosineSimilarity(dim=1)(direction.reshape(
             (1, -1, 1, 1)), layer_t).mean()
 
     return inner
