@@ -40,8 +40,7 @@ class Objective():
         else:
             objective_func = lambda model: self(model) + other(model)
             name = ", ".join([self.name, other.name])
-            description = "Sum(" + " +\n".join(
-                [self.description, other.description]) + ")"
+            description = "Sum(" + " +\n".join([self.description, other.description]) + ")"
         return Objective(objective_func, name=name, description=description)
 
     @staticmethod
@@ -62,20 +61,17 @@ class Objective():
     def __mul__(self, other):
         if isinstance(other, (int, float)):
             objective_func = lambda model: other * self(model)
-            return Objective(
-                objective_func, name=self.name, description=self.description)
+            return Objective(objective_func, name=self.name, description=self.description)
         else:
             # Note: In original Lucid library, objectives can be multiplied with non-numbers
             # Removing for now until we find a good use case
-            raise TypeError('Can only multiply by int or float. Received type '
-                            + str(type(other)))
+            raise TypeError('Can only multiply by int or float. Received type ' + str(type(other)))
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return self.__mul__(1 / other)
         else:
-            raise TypeError('Can only divide by int or float. Received type ' +
-                            str(type(other)))
+            raise TypeError('Can only divide by int or float. Received type ' + str(type(other)))
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -85,7 +81,6 @@ class Objective():
 
 
 def wrap_objective():
-
     @decorator
     def inner(func, *args, **kwds):
         objective_func = func(*args, **kwds)
@@ -93,7 +88,6 @@ def wrap_objective():
         args_str = " [" + ", ".join([_make_arg_str(arg) for arg in args]) + "]"
         description = objective_name.title() + args_str
         return Objective(objective_func, objective_name, description)
-
     return inner
 
 
@@ -121,39 +115,31 @@ def neuron(layer, n_channel, x=None, y=None, batch=None):
                                       +---+---+---+---+
 
     """
-
     @handle_batch(batch)
     def inner(model):
         layer_t = model(layer)
         layer_t = _extract_act_pos(layer_t, x, y)
         return -layer_t[:, n_channel].mean()
-
     return inner
 
 
 @wrap_objective()
 def channel(layer, n_channel, batch=None):
     """Visualize a single channel"""
+    @handle_batch(batch)
+    def inner(model):
+        return -model(layer)[:, n_channel].mean()
+    return inner
+
+@wrap_objective()
+def direction(layer, vec, cossim_pow=0, batch=None):
+    """Visualize a direction"""
 
     @handle_batch(batch)
     def inner(model):
-        # breakpoint()
-        return -model(layer)[:, n_channel].mean()
+        return _dot_cossim(model(layer), vec, cossim_pow=cossim_pow)
 
     return inner
-
-
-# @wrap_objective()
-# def direction(layer, vec, cossim_pow=0, batch=None):
-#     """Visualize a direction"""
-#     vec = vec[None, None, None]
-
-#     @handle_batch(batch)
-#     def inner(model):
-#         return _dot_cossim(model(layer), vec, cossim_pow=cossim_pow)
-
-#     return inner
-
 
 @wrap_objective()
 def direction_neuron(layer_name,
@@ -198,7 +184,7 @@ def _torch_blur(tensor, out_c=3):
     weight = np.zeros([depth, depth, out_c, out_c])
     for ch in range(depth):
         weight_ch = weight[ch, ch, :, :]
-        weight_ch[:, :] = 0.5
+        weight_ch[ :  ,  :  ] = 0.5
         weight_ch[1:-1, 1:-1] = 1.0
     weight_t = torch.tensor(weight).float().to(device)
     conv_f = lambda t: F.conv2d(t, weight_t, None, 1, 1)
@@ -213,13 +199,11 @@ def blur_input_each_step():
     An operation that was used in early feature visualization work.
     See Nguyen, et al., 2015.
     """
-
     def inner(T):
         t_input = T("input")
         with torch.no_grad():
             t_input_blurred = _torch_blur(t_input)
-        return -0.5 * torch.sum((t_input - t_input_blurred)**2)
-
+        return -0.5*torch.sum((t_input - t_input_blurred)**2)
     return inner
 
 
@@ -236,7 +220,6 @@ def channel_interpolate(layer1, n_channel1, layer2, n_channel2):
     Returns:
         Objective
     """
-
     def inner(model):
         batch_n = list(model(layer1).shape)[0]
         arr1 = model(layer1)[:, n_channel1]
@@ -247,7 +230,6 @@ def channel_interpolate(layer1, n_channel1, layer2, n_channel2):
             sum_loss -= (1 - weights[n]) * arr1[n].mean()
             sum_loss -= weights[n] * arr2[n].mean()
         return sum_loss
-
     return inner
 
 
@@ -268,7 +250,6 @@ def alignment(layer, decay_ratio=2):
     Returns:
         Objective.
     """
-
     def inner(model):
         batch_n = list(model(layer).shape)[0]
         layer_t = model(layer)
@@ -277,9 +258,8 @@ def alignment(layer, decay_ratio=2):
             for i in range(batch_n - d):
                 a, b = i, i + d
                 arr_a, arr_b = layer_t[a], layer_t[b]
-                accum += ((arr_a - arr_b)**2).mean() / decay_ratio**float(d)
+                accum += ((arr_a - arr_b) ** 2).mean() / decay_ratio ** float(d)
         return accum
-
     return inner
 
 
@@ -302,20 +282,15 @@ def diversity(layer):
     Returns:
         Objective.
     """
-
     def inner(model):
         layer_t = model(layer)
         batch, channels, _, _ = layer_t.shape
         flattened = layer_t.view(batch, channels, -1)
         grams = torch.matmul(flattened, torch.transpose(flattened, 1, 2))
         grams = F.normalize(grams, p=2, dim=(1, 2))
-        return -sum([
-            sum([(grams[i] * grams[j]).sum()
-                 for j in range(batch)
-                 if j != i])
-            for i in range(batch)
-        ]) / batch
-
+        return -sum([ sum([ (grams[i]*grams[j]).sum()
+               for j in range(batch) if j != i])
+               for i in range(batch)]) / batch
     return inner
 
 
