@@ -15,6 +15,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import warnings
 from collections import OrderedDict
 import numpy as np
 from tqdm import tqdm
@@ -94,13 +95,15 @@ def render_vis(
                 model(transform_f(image_f()))
             except RuntimeError as ex:
                 if i == 1:
-                    print(
+                    # Only display the warning message
+                    # on the first iteration, no need to do that
+                    # every iteration
+                    warnings.warn(
                         "Some layers could not be computed because the size of the "
                         "image is not big enough. It is fine, as long as the non"
                         "computed layers are not used in the objective function"
+                        f"(exception details: '{ex}')"
                     )
-                    print("Details:")
-                    print(ex)
             loss = objective_f(hook)
             loss.backward()
             optimizer.step()
