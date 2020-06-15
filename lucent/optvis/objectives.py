@@ -131,22 +131,34 @@ def channel(layer, n_channel, batch=None):
         return -model(layer)[:, n_channel].mean()
     return inner
 
+
 @wrap_objective()
-def direction(layer, vec, cossim_pow=0, batch=None):
-    """Visualize a direction"""
+def direction(layer, direction, batch=None):
+    """Visualize a direction
+
+    Args:
+        layer: Name of layer in model (string)
+        direction: Direction to visualize. torch.Tensor of shape (num_channels,)
+        batch: Batch number (int)
+
+    Returns:
+        Objective
+
+    """
 
     @handle_batch(batch)
     def inner(model):
-        return _dot_cossim(model(layer), vec, cossim_pow=cossim_pow)
+        return -torch.nn.CosineSimilarity(dim=1)(direction.reshape(
+            (1, -1, 1, 1)), model(layer)).mean()
 
     return inner
 
+
 @wrap_objective()
-def direction_neuron(layer_name,
+def direction_neuron(layer,
                      direction,
                      x=None,
                      y=None,
-                     cossim_pow=0,
                      batch=None):
     """Visualize a single (x, y) position along the given direction
 
@@ -165,12 +177,20 @@ def direction_neuron(layer_name,
                                       |   |   |   |   |
                                       +---+---+---+---+
 
+    Args:
+        layer: Name of layer in model (string)
+        direction: Direction to visualize. torch.Tensor of shape (num_channels,)
+        batch: Batch number (int)
+
+    Returns:
+        Objective
+
     """
 
     @handle_batch(batch)
     def inner(model):
         # breakpoint()
-        layer_t = model(layer_name)
+        layer_t = model(layer)
         layer_t = _extract_act_pos(layer_t, x, y)
         return -torch.nn.CosineSimilarity(dim=1)(direction.reshape(
             (1, -1, 1, 1)), layer_t).mean()
