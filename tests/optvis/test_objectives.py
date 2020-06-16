@@ -66,14 +66,14 @@ def test_channel(inceptionv1_model):
 
 
 def test_direction(inceptionv1_model):
-    direction = torch.rand(512) * 1000
-    objective = objectives.direction(layer_name='mixed4c', direction=direction)
+    direction = torch.rand(512)
+    objective = objectives.direction(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)
 
 
 def test_direction_neuron(inceptionv1_model):
-    direction = torch.rand(512) * 1000
-    objective = objectives.direction_neuron(layer_name='mixed4c', direction=direction)
+    direction = torch.rand(512)
+    objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)
 
 
