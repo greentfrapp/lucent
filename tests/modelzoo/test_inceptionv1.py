@@ -39,3 +39,9 @@ def test_inceptionv1_graph_import():
     layer_names = util.get_model_layers(model)
     for layer_name in important_layer_names:
         assert layer_name in layer_names
+
+def test_inceptionv1_import_layer_repr():
+    model = inceptionv1()
+    layer_names = util.get_model_layers(model, getLayerRepr=True)
+    for layer_name in important_layer_names:
+        assert layer_names[layer_name] == 'CatLayer()'

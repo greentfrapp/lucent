@@ -19,7 +19,6 @@ from __future__ import absolute_import, division, print_function
 
 import torch
 import random
-from collections import OrderedDict
 
 
 def set_seed(seed):
@@ -28,18 +27,3 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic=True
     random.seed(seed)
-
-def lucent_layernames(net, prefix=[]):
-    """ Return the layername and str representation of the layer """
-    layernames = OrderedDict()
-    def hook_layernames(net, prefix=[]):
-        """Recursive function to return the layer name"""
-        if hasattr(net, "_modules"):
-            for name, layer in net._modules.items():
-                if layer is None:
-                    # e.g. GoogLeNet's aux1 and aux2 layers
-                    continue
-                layernames["_".join(prefix+[name])] = layer.__repr__()
-                hook_layernames(layer, prefix=prefix+[name])
-    hook_layernames(net, prefix)
-    return layernames
