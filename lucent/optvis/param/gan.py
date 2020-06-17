@@ -1,3 +1,17 @@
+"""
+Copyright 2020 Binxu Wang
+Use GAN as prior to do feature visualization.
+This method is inspired by the work
+    Nguyen, A., Dosovitskiy, A., Yosinski, J., Brox, T., & Clune, J.
+    Synthesizing the preferred inputs for neurons in neural networks via deep generator networks.(2016) NIPS
+
+The GAN model is imported from
+    A. Dosovitskiy, T. Brox `Generating Images with Perceptual Similarity Metrics based on Deep Networks` (2016), NIPS.
+    https://lmb.informatik.uni-freiburg.de/people/dosovits/code.html
+the author translated the models (pool5-fc8) into pytorch and hosts the weights online.
+
+Jun.4th 2020
+"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,34 +19,13 @@ from collections import OrderedDict
 import os
 from os.path import join
 from sys import platform
-load_urls = False
-if platform == "linux":  # CHPC cluster
-    homedir = os.path.expanduser('~')
-    netsdir = os.path.join(homedir, 'Generate_DB/nets')
-    load_urls = True
-    # ckpt_path = {"vgg16": "/scratch/binxu/torch/vgg16-397923af.pth"}
-else:
-    if os.environ['COMPUTERNAME'] == 'DESKTOP-9DDE2RH':  # PonceLab-Desktop 3
-        homedir = "D:/Generator_DB_Windows"
-        netsdir = os.path.join(homedir, 'nets')
-    elif os.environ['COMPUTERNAME'] == 'PONCELAB-ML2C':  # PonceLab-Desktop Victoria
-        homedir = r"C:\Users\ponce\Documents\Generator_DB_Windows"
-        netsdir = os.path.join(homedir, 'nets')
-    elif os.environ['COMPUTERNAME'] == 'DESKTOP-MENSD6S':  # Home_WorkStation
-        homedir = "E:/Monkey_Data/Generator_DB_Windows"
-        netsdir = os.path.join(homedir, 'nets')
-    elif os.environ['COMPUTERNAME'] == 'DESKTOP-9LH02U9':  # Home_WorkStation Victoria
-        homedir = "C:/Users/zhanq/OneDrive - Washington University in St. Louis/Generator_DB_Windows"
-        netsdir = os.path.join(homedir, 'nets')
-    else:
-        load_urls = True
-        homedir = os.path.expanduser('~')
-        netsdir = os.path.join(homedir, 'Documents/nets')
+load_urls = True  # If you have downloaded the pt files you can set the netsdir and set load_urls as False.
+netsdir = "~"      # the place you put the networks
 
 model_urls = {"pool5" : "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145337&authkey=AFaUAgeoIg0WtmA",
-    "fc6": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145339&authkey=AC2rQMt7Obr0Ba4",
-    "fc7": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145338&authkey=AJ0R-daUAVYjQIw",
-    "fc8": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145340&authkey=AKIfNk7s5MGrRkU"}
+            "fc6": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145339&authkey=AC2rQMt7Obr0Ba4",
+            "fc7": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145338&authkey=AJ0R-daUAVYjQIw",
+            "fc8": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145340&authkey=AKIfNk7s5MGrRkU"}
 
 
 def load_statedict_from_online(name="fc6"):
@@ -40,7 +33,7 @@ def load_statedict_from_online(name="fc6"):
     ckpthome = join(torchhome, "checkpoints")
     os.makedirs(ckpthome, exist_ok=True)
     filepath = join(ckpthome, "upconvGAN_%s.pt"%name)
-    if os.path.exists(filepath):
+    if not os.path.exists(filepath):
         torch.hub.download_url_to_file(model_urls[name], filepath, hash_prefix=None,
                                    progress=True)
     SD = torch.load(filepath)
@@ -61,6 +54,7 @@ RGB_mean = torch.reshape(RGB_mean, (1, 3, 1, 1))
 
 class upconvGAN(nn.Module):
     def __init__(self, name="fc6", pretrained=True):
+        """ `name`: can be ["fc6", "fc7", "fc8", "pool5"] """
         super(upconvGAN, self).__init__()
         self.name = name
         if name == "fc6" or name == "fc7":
@@ -93,31 +87,31 @@ class upconvGAN(nn.Module):
             self.codelen = self.G[0].in_features
         elif name == "fc8":
             self.G = nn.Sequential(OrderedDict([
-  ("defc7", nn.Linear(in_features=1000, out_features=4096, bias=True)),
-  ("relu_defc7", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("defc6", nn.Linear(in_features=4096, out_features=4096, bias=True)),
-  ("relu_defc6", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("defc5", nn.Linear(in_features=4096, out_features=4096, bias=True)),
-  ("relu_defc5", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("reshape", View((-1, 256, 4, 4))),
-  ("deconv5", nn.ConvTranspose2d(256, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ("relu_deconv5", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("conv5_1", nn.ConvTranspose2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
-  ("relu_conv5_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("deconv4", nn.ConvTranspose2d(512, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ("relu_deconv4", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("conv4_1", nn.ConvTranspose2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
-  ("relu_conv4_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("deconv3", nn.ConvTranspose2d(256, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ("relu_deconv3", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("conv3_1", nn.ConvTranspose2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
-  ("relu_conv3_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("deconv2", nn.ConvTranspose2d(128, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ("relu_deconv2", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("deconv1", nn.ConvTranspose2d(64, 32, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ("relu_deconv1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
-  ("deconv0", nn.ConvTranspose2d(32, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
-  ]))
+      ("defc7", nn.Linear(in_features=1000, out_features=4096, bias=True)),
+      ("relu_defc7", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("defc6", nn.Linear(in_features=4096, out_features=4096, bias=True)),
+      ("relu_defc6", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("defc5", nn.Linear(in_features=4096, out_features=4096, bias=True)),
+      ("relu_defc5", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("reshape", View((-1, 256, 4, 4))),
+      ("deconv5", nn.ConvTranspose2d(256, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ("relu_deconv5", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("conv5_1", nn.ConvTranspose2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
+      ("relu_conv5_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("deconv4", nn.ConvTranspose2d(512, 256, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ("relu_deconv4", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("conv4_1", nn.ConvTranspose2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
+      ("relu_conv4_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("deconv3", nn.ConvTranspose2d(256, 128, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ("relu_deconv3", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("conv3_1", nn.ConvTranspose2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))),
+      ("relu_conv3_1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("deconv2", nn.ConvTranspose2d(128, 64, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ("relu_deconv2", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("deconv1", nn.ConvTranspose2d(64, 32, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ("relu_deconv1", nn.LeakyReLU(negative_slope=0.3, inplace=True)),
+      ("deconv0", nn.ConvTranspose2d(32, 3, kernel_size=(4, 4), stride=(2, 2), padding=(1, 1))),
+      ]))
             self.codelen = self.G[0].in_features
         elif name == "pool5":
             self.G = nn.Sequential(OrderedDict([
@@ -150,16 +144,17 @@ class upconvGAN(nn.Module):
             if load_urls:
                 SDnew = load_statedict_from_online(name)
             else:
-                savepath = {"fc6": join(netsdir, r"upconv/fc6/generator_state_dict.pt"),
-                            "fc7": join(netsdir, r"upconv/fc7/generator_state_dict.pt"),
-                            "fc8": join(netsdir, r"upconv/fc8/generator_state_dict.pt"),
-                            "pool5": join(netsdir, r"upconv/pool5/generator_state_dict.pt")}
+                savepath = {"fc6": join(netsdir, "upconvGAN_%s.pt"%name),
+                            "fc7": join(netsdir, "upconvGAN_%s.pt"%name),
+                            "fc8": join(netsdir, "upconvGAN_%s.pt"%name),
+                            "pool5": join(netsdir, "upconvGAN_%s.pt"%name)}
                 SD = torch.load(savepath[name])
                 SDnew = OrderedDict()
                 for name, W in SD.items():  # discard this inconsistency
                     name = name.replace(".1.", ".")
                     SDnew[name] = W
             self.G.load_state_dict(SDnew)
+        self.G.requires_grad_(False)
 
     def forward(self, x):
         return self.G(x)[:, [2, 1, 0], :, :]

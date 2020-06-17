@@ -29,11 +29,10 @@ set_seed(137)
 
 
 NUM_STEPS = 5
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 @pytest.fixture
 def inceptionv1_model():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = inceptionv1().to(device).eval()
     return model
 
@@ -62,6 +61,21 @@ def test_neuron(inceptionv1_model):
 
 def test_channel(inceptionv1_model):
     objective = objectives.channel("mixed3a_1x1_pre_relu_conv", 0)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+def test_neuron_weight(inceptionv1_model):
+    weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
+    objective = objectives.neuron_weight("mixed3a_1x1_pre_relu_conv", weight, x=None, y=None,)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+def test_localgroup_weight(inceptionv1_model):
+    weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
+    objective = objectives.localgroup_weight("mixed3a_1x1_pre_relu_conv", weight, x=10, y=10, wx=3, wy=3)  # a 3 by 3 square start from (10, 10)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+def test_channel_weight(inceptionv1_model):
+    weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
+    objective = objectives.channel_weight("mixed3a_1x1_pre_relu_conv", weight)
     assert_gradient_descent(objective, inceptionv1_model)
 
 

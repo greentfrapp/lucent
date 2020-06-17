@@ -132,7 +132,7 @@ def channel(layer, n_channel, batch=None):
     return inner
 
 @wrap_objective()
-def neuron_weight(layer, weight=None, x=None, y=None, batch=None):
+def neuron_weight(layer, weight, x=None, y=None, batch=None):
     """ Linearly weighted channel activation at one location as objective
     weight: a torch Tensor vector same length as channel.
     """
