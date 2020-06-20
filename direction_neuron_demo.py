@@ -9,6 +9,6 @@ model.to(device).eval()
 param_f = lambda: param.image(224, fft=True, decorrelate=True)
 opt = lambda params: torch.optim.Adam(params, 5e-2)
 direction = torch.rand(256) * 1000
-obj = objectives.direction_neuron(layer_name='layer3', direction=direction)
+obj = objectives.direction_neuron(layer='layer3', direction=direction)
 
 render.render_vis(model, obj, param_f, opt)
