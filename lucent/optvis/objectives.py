@@ -137,7 +137,7 @@ def direction(layer, direction, batch=None):
     """Visualize a direction
 
     InceptionV1 example:
-    > direction = torch.rand(512)
+    > direction = torch.rand(512, device=device)
     > obj = objectives.direction(layer='mixed4c', direction=direction)
 
     Args:
@@ -169,7 +169,7 @@ def direction_neuron(layer,
     Similar to the neuron objective, defaults to the center neuron.
 
     InceptionV1 example:
-    > direction = torch.rand(512)
+    > direction = torch.rand(512, device=device)
     > obj = objectives.direction_neuron(layer='mixed4c', direction=direction)
 
     Args:
