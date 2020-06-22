@@ -16,15 +16,26 @@
 """Utility functions for modelzoo models."""
 
 from __future__ import absolute_import, division, print_function
+from collections import OrderedDict
 
 
-def get_model_layers(model):
-    layers = []
+def get_model_layers(model, getLayerRepr=False):
+    """
+    If getLayerRepr is True, return a OrderedDict of layer names, layer representation string pair.
+    If it's False, just return a list of layer names
+    """
+    layers = OrderedDict() if getLayerRepr else []
     # recursive function to get layers
     def get_layers(net, prefix=[]):
         if hasattr(net, "_modules"):
             for name, layer in net._modules.items():
-                layers.append("_".join(prefix+[name]))
+                if layer is None:
+                    # e.g. GoogLeNet's aux1 and aux2 layers
+                    continue
+                if getLayerRepr:
+                    layers["_".join(prefix+[name])] = layer.__repr__()
+                else:
+                    layers.append("_".join(prefix + [name]))
                 get_layers(layer, prefix=prefix+[name])
 
     get_layers(model)

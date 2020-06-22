@@ -131,6 +131,43 @@ def channel(layer, n_channel, batch=None):
         return -model(layer)[:, n_channel].mean()
     return inner
 
+@wrap_objective()
+def neuron_weight(layer, weight, x=None, y=None, batch=None):
+    """ Linearly weighted channel activation at one location as objective
+    weight: a torch Tensor vector same length as channel.
+    """
+    @handle_batch(batch)
+    def inner(model):
+        layer_t = model(layer)
+        layer_t = _extract_act_pos(layer_t, x, y)
+        if weight is None:
+            return -layer_t.mean()
+        else:
+            return -(layer_t.squeeze() * weight).mean()
+    return inner
+
+@wrap_objective()
+def channel_weight(layer, weight, batch=None):
+    """ Linearly weighted channel activation as objective
+    weight: a torch Tensor vector same length as channel. """
+    @handle_batch(batch)
+    def inner(model):
+        layer_t = model(layer)
+        return -(layer_t * weight.view(1, -1, 1, 1)).mean()
+    return inner
+
+@wrap_objective()
+def localgroup_weight(layer, weight=None, x=None, y=None, wx=1, wy=1, batch=None):
+    """ Linearly weighted channel activation around some spot as objective
+    weight: a torch Tensor vector same length as channel. """
+    @handle_batch(batch)
+    def inner(model):
+        layer_t = model(layer)
+        if weight is None:
+            return -(layer_t[:, :, y:y + wy, x:x + wx]).mean()
+        else:
+            return -(layer_t[:, :, y:y + wy, x:x + wx] * weight.view(1, -1, 1, 1)).mean()
+    return inner
 
 def _torch_blur(tensor, out_c=3):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
