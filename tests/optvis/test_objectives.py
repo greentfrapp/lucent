@@ -65,18 +65,6 @@ def test_channel(inceptionv1_model):
     assert_gradient_descent(objective, inceptionv1_model)
 
 
-def test_direction(inceptionv1_model):
-    direction = torch.rand(512)
-    objective = objectives.direction(layer='mixed4c', direction=direction)
-    assert_gradient_descent(objective, inceptionv1_model)
-
-
-def test_direction_neuron(inceptionv1_model):
-    direction = torch.rand(512)
-    objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
-    assert_gradient_descent(objective, inceptionv1_model)
-
-
 def test_sum(inceptionv1_model):
     channel = lambda n: objectives.channel("mixed4a_pool_reduce_pre_relu_conv", n)
     objective = objectives.Objective.sum([channel(21), channel(32)])
@@ -114,4 +102,16 @@ def test_alignment(inceptionv1_model):
 
 def test_diversity(inceptionv1_model):
     objective = objectives.channel("mixed4a", 0) - 100 * objectives.diversity("mixed4a")
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_direction(inceptionv1_model):
+    direction = torch.rand(512) * 1000
+    objective = objectives.direction(layer='mixed4c', direction=direction)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_direction_neuron(inceptionv1_model):
+    direction = torch.rand(512) * 1000
+    objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)

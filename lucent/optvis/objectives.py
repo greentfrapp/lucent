@@ -136,6 +136,10 @@ def channel(layer, n_channel, batch=None):
 def direction(layer, direction, batch=None):
     """Visualize a direction
 
+    InceptionV1 example:
+    > direction = torch.rand(512)
+    > obj = objectives.direction(layer='mixed4c', direction=direction)
+
     Args:
         layer: Name of layer in model (string)
         direction: Direction to visualize. torch.Tensor of shape (num_channels,)
@@ -162,20 +166,11 @@ def direction_neuron(layer,
                      batch=None):
     """Visualize a single (x, y) position along the given direction
 
-    Defaults to the center neuron. When width and height are even numbers, we
-    choose the neuron in the bottom right of the center 2x2 neurons.
+    Similar to the neuron objective, defaults to the center neuron.
 
-    Odd width & height:               Even width & height:
-
-    +---+---+---+                     +---+---+---+---+
-    |   |   |   |                     |   |   |   |   |
-    +---+---+---+                     +---+---+---+---+
-    |   | X |   |                     |   |   |   |   |
-    +---+---+---+                     +---+---+---+---+
-    |   |   |   |                     |   |   | X |   |
-    +---+---+---+                     +---+---+---+---+
-                                      |   |   |   |   |
-                                      +---+---+---+---+
+    InceptionV1 example:
+    > direction = torch.rand(512)
+    > obj = objectives.direction_neuron(layer='mixed4c', direction=direction)
 
     Args:
         layer: Name of layer in model (string)
