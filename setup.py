@@ -44,6 +44,7 @@ setup(
         "pytest-mock",
         "coverage",
         "coveralls",
+        "scikit-learn"
     ],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

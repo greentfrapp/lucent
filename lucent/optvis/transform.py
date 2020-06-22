@@ -28,23 +28,22 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def jitter(d):
     assert d > 1, "Jitter parameter d must be more than 1, currently {}".format(d)
+
     def inner(image_t):
         dx = np.random.choice(d)
         dy = np.random.choice(d)
         return translate(image_t, torch.tensor([[dx, dy]]).float().to(device))
+
     return inner
 
 
 def pad(w, mode="reflect", constant_value=0.5):
     if mode != "constant":
         constant_value = 0
+
     def inner(image_t):
-        return F.pad(
-            image_t,
-            [w]*4,
-            mode=mode,
-            value=constant_value,
-        )
+        return F.pad(image_t, [w] * 4, mode=mode, value=constant_value,)
+
     return inner
 
 
@@ -53,10 +52,13 @@ def random_scale(scales):
         scale = np.random.choice(scales)
         shp = image_t.shape[2:]
         scale_shape = [_roundup(scale * d) for d in shp]
-        pad_x = max(0, _roundup((shp[1] - scale_shape[1])/2))
-        pad_y = max(0, _roundup((shp[0] - scale_shape[0])/2))
-        upsample = torch.nn.Upsample(size=scale_shape, mode='bilinear', align_corners=True)
-        return F.pad(upsample(image_t), [pad_y, pad_x]*2)
+        pad_x = max(0, _roundup((shp[1] - scale_shape[1]) / 2))
+        pad_y = max(0, _roundup((shp[0] - scale_shape[0]) / 2))
+        upsample = torch.nn.Upsample(
+            size=scale_shape, mode="bilinear", align_corners=True
+        )
+        return F.pad(upsample(image_t), [pad_y, pad_x] * 2)
+
     return inner
 
 
@@ -73,6 +75,7 @@ def random_rotate(angles, units="degrees"):
         M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
         rotated_image = kornia.warp_affine(image_t.float(), M, dsize=(h, w))
         return rotated_image
+
     return inner
 
 
@@ -81,6 +84,7 @@ def compose(transforms):
         for transform in transforms:
             x = transform(x)
         return x
+
     return inner
 
 
@@ -92,17 +96,18 @@ def _rads2angle(angle, units):
     if units.lower() == "degrees":
         return angle
     if units.lower() in ["radians", "rads", "rad"]:
-        angle = angle * 180. / np.pi
+        angle = angle * 180.0 / np.pi
     return angle
 
 
 def normalize():
     # ImageNet normalization for torchvision models
     # see https://pytorch.org/docs/stable/torchvision/models.html
-    normal = Normalize(mean=[0.485, 0.456, 0.406],
-                       std=[0.229, 0.224, 0.225])
+    normal = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+
     def inner(image_t):
         return torch.stack([normal(t) for t in image_t])
+
     return inner
 
 
@@ -115,9 +120,9 @@ def preprocess_inceptionv1():
 
 
 standard_transforms = [
-    pad(12, mode="constant", constant_value=.5),
+    pad(12, mode="constant", constant_value=0.5),
     jitter(8),
-    random_scale([1 + (i - 5) / 50. for i in range(11)]),
+    random_scale([1 + (i - 5) / 50.0 for i in range(11)]),
     random_rotate(list(range(-10, 11)) + 5 * [0]),
     jitter(4),
 ]
