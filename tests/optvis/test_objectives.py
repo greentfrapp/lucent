@@ -91,10 +91,10 @@ def test_linear_transform(inceptionv1_model):
 
 
 def test_mul_div_raises():
-    with pytest.raises(Exception) as excinfo:   
+    with pytest.raises(Exception) as excinfo:
         objective = objectives.channel("mixed4a", 0) / objectives.channel("mixed4a", 0)
     assert str(excinfo.value) == "Can only divide by int or float. Received type <class 'lucent.optvis.objectives.Objective'>"
-    with pytest.raises(Exception) as excinfo:   
+    with pytest.raises(Exception) as excinfo:
         objective = objectives.channel("mixed4a", 0) * objectives.channel("mixed4a", 0)
     assert str(excinfo.value) == "Can only multiply by int or float. Received type <class 'lucent.optvis.objectives.Objective'>"
 
@@ -116,4 +116,16 @@ def test_alignment(inceptionv1_model):
 
 def test_diversity(inceptionv1_model):
     objective = objectives.channel("mixed4a", 0) - 100 * objectives.diversity("mixed4a")
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_direction(inceptionv1_model):
+    direction = torch.rand(512) * 1000
+    objective = objectives.direction(layer='mixed4c', direction=direction)
+    assert_gradient_descent(objective, inceptionv1_model)
+
+
+def test_direction_neuron(inceptionv1_model):
+    direction = torch.rand(512) * 1000
+    objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)

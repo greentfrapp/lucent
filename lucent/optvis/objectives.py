@@ -169,6 +169,67 @@ def localgroup_weight(layer, weight=None, x=None, y=None, wx=1, wy=1, batch=None
             return -(layer_t[:, :, y:y + wy, x:x + wx] * weight.view(1, -1, 1, 1)).mean()
     return inner
 
+@wrap_objective()
+def direction(layer, direction, batch=None):
+    """Visualize a direction
+
+    InceptionV1 example:
+    > direction = torch.rand(512, device=device)
+    > obj = objectives.direction(layer='mixed4c', direction=direction)
+
+    Args:
+        layer: Name of layer in model (string)
+        direction: Direction to visualize. torch.Tensor of shape (num_channels,)
+        batch: Batch number (int)
+
+    Returns:
+        Objective
+
+    """
+
+    @handle_batch(batch)
+    def inner(model):
+        return -torch.nn.CosineSimilarity(dim=1)(direction.reshape(
+            (1, -1, 1, 1)), model(layer)).mean()
+
+    return inner
+
+
+@wrap_objective()
+def direction_neuron(layer,
+                     direction,
+                     x=None,
+                     y=None,
+                     batch=None):
+    """Visualize a single (x, y) position along the given direction
+
+    Similar to the neuron objective, defaults to the center neuron.
+
+    InceptionV1 example:
+    > direction = torch.rand(512, device=device)
+    > obj = objectives.direction_neuron(layer='mixed4c', direction=direction)
+
+    Args:
+        layer: Name of layer in model (string)
+        direction: Direction to visualize. torch.Tensor of shape (num_channels,)
+        batch: Batch number (int)
+
+    Returns:
+        Objective
+
+    """
+
+    @handle_batch(batch)
+    def inner(model):
+        # breakpoint()
+        layer_t = model(layer)
+        layer_t = _extract_act_pos(layer_t, x, y)
+        return -torch.nn.CosineSimilarity(dim=1)(direction.reshape(
+            (1, -1, 1, 1)), layer_t).mean()
+
+    return inner
+
+
 def _torch_blur(tensor, out_c=3):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     depth = tensor.shape[1]
@@ -278,7 +339,7 @@ def diversity(layer):
         batch, channels, _, _ = layer_t.shape
         flattened = layer_t.view(batch, channels, -1)
         grams = torch.matmul(flattened, torch.transpose(flattened, 1, 2))
-        grams = F.normalize(grams, p=2, dim=(1, 2)) 
+        grams = F.normalize(grams, p=2, dim=(1, 2))
         return -sum([ sum([ (grams[i]*grams[j]).sum()
                for j in range(batch) if j != i])
                for i in range(batch)]) / batch
