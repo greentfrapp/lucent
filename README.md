@@ -64,6 +64,10 @@ Here, we have tried to recreate some of the Lucid notebooks!
 <img src="https://github.com/greentfrapp/lucent/raw/master/images/style_transfer_card.jpg" width="500" alt=""></img>
 </a>
 
+<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/activation_grids.ipynb">
+<img src="https://github.com/greentfrapp/lucent/raw/master/images/activation_grid_card.jpg" width="500" alt=""></img>
+</a>
+
 # Recommended Readings
 
 * [Feature Visualization](https://distill.pub/2017/feature-visualization/)
