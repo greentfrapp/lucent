@@ -43,29 +43,29 @@ render.render_vis(model, "mixed4a:476")
 
 ## Tutorials
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/tutorial.ipynb">
-<img src="https://github.com/greentfrapp/lucent/raw/master/images/tutorial_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/tutorial.ipynb">
+<img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/tutorial_card.jpg" width="500" alt=""></img></a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/modelzoo.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/modelzoo_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/modelzoo.ipynb"><img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/modelzoo_card.jpg" width="500" alt=""></img></a>
 
 ## Other Notebooks
 
-Here, we have tried to recreate some of the Lucid notebooks!
+Here, we have tried to recreate some of the Lucid notebooks! You can also check out the [lucent-notebooks](https://github.com/greentfrapp/lucent-notebooks) repo to clone all the notebooks.
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/diversity.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/diversity_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/diversity.ipynb"><img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/diversity_card.jpg" width="500" alt=""></img></a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/neuron_interaction.ipynb"><img src="https://github.com/greentfrapp/lucent/raw/master/images/neuron_interaction_card.jpg" width="500" alt=""></img></a>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/neuron_interaction.ipynb"><img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/neuron_interaction_card.jpg" width="500" alt=""></img></a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/feature_inversion.ipynb">
-<img src="https://github.com/greentfrapp/lucent/raw/master/images/feature_inversion_card.jpg" width="500" alt=""></img>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/feature_inversion.ipynb">
+<img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/feature_inversion_card.jpg" width="500" alt=""></img>
 </a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/style_transfer.ipynb">
-<img src="https://github.com/greentfrapp/lucent/raw/master/images/style_transfer_card.jpg" width="500" alt=""></img>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/style_transfer.ipynb">
+<img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/style_transfer_card.jpg" width="500" alt=""></img>
 </a>
 
-<a href="https://colab.research.google.com/github/greentfrapp/lucent/blob/master/notebooks/activation_grids.ipynb">
-<img src="https://github.com/greentfrapp/lucent/raw/master/images/activation_grids_card.jpg" width="500" alt=""></img>
+<a href="https://colab.research.google.com/github/greentfrapp/lucent-notebooks/blob/master/notebooks/activation_grids.ipynb">
+<img src="https://github.com/greentfrapp/lucent-notebooks/raw/master/images/activation_grids_card.jpg" width="500" alt=""></img>
 </a>
 
 # Recommended Readings
