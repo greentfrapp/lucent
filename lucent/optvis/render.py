@@ -193,9 +193,13 @@ def hook_model(model, image_f):
 
     def hook(layer):
         if layer == "input":
-            return image_f()
-        if layer == "labels":
-            return list(features.values())[-1].features
-        return features[layer].features
+            out = image_f()
+        elif layer == "labels":
+            out = list(features.values())[-1].features
+        else:
+            assert layer in features, f"Invalid layer {layer}. Retrieve the list of layers with `lucent.modelzoo.util.get_model_layers(model)`."
+            out = features[layer].features
+        assert out is not None, "There are no saved feature maps. Make sure to put the model in eval mode, like so: `model.to(device).eval()`. See README for example."
+        return out
 
     return hook
