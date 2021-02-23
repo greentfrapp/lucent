@@ -68,7 +68,7 @@ def random_rotate(angles, units="degrees"):
         # kornia takes degrees
         alpha = _rads2angle(np.random.choice(angles), units)
         angle = torch.ones(b) * alpha
-        scale = torch.ones(b)
+        scale = torch.ones(b, 2)
         center = torch.ones(b, 2)
         center[..., 0] = (image_t.shape[3] - 1) / 2
         center[..., 1] = (image_t.shape[2] - 1) / 2

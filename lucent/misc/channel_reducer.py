@@ -24,9 +24,8 @@ import sklearn.decomposition
 
 try:
     from sklearn.decomposition.base import BaseEstimator
-except AttributeError:
+except (AttributeError, ModuleNotFoundError):
     from sklearn.base import BaseEstimator
-
 
 class ChannelReducer(object):
     """Helper for dimensionality reduction to the innermost dimension of a tensor.
