@@ -54,7 +54,7 @@ def fft_image(shape, sd=None, decay_power=1):
 
     def inner():
         scaled_spectrum_t = scale * spectrum_real_imag_t
-        image = torch.irfft(scaled_spectrum_t, 2, normalized=True, signal_sizes=(h, w))
+        image = torch.fft.irfft(scaled_spectrum_t, 2, normalized=True, signal_sizes=(h, w))
         image = image[:batch, :channels, :h, :w]
         magic = 4.0 # Magic constant from Lucid library; increasing this seems to reduce saturation
         image = image / magic
