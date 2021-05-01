@@ -24,6 +24,7 @@ from kornia.geometry.transform import translate
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+KORNIA_VERSION = kornia.__version__
 
 
 def jitter(d):
@@ -68,7 +69,10 @@ def random_rotate(angles, units="degrees"):
         # kornia takes degrees
         alpha = _rads2angle(np.random.choice(angles), units)
         angle = torch.ones(b) * alpha
-        scale = torch.ones(b, 2)
+        if KORNIA_VERSION < '0.4.0':
+            scale = torch.ones(b)
+        else:
+            scale = torch.ones(b, 2)
         center = torch.ones(b, 2)
         center[..., 0] = (image_t.shape[3] - 1) / 2
         center[..., 1] = (image_t.shape[2] - 1) / 2
