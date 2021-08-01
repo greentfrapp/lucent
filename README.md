@@ -28,7 +28,7 @@ You can also clone this repository and run the notebooks locally with [Jupyter](
 
 ## Quickstart
 
-```
+```python
 import torch
 
 from lucent.optvis import render
