@@ -14,27 +14,6 @@ _COMMON_META = {
     "categories": _IMAGENET_CATEGORIES,
 }
 
-class ResNet18_Weights(WeightsEnum):
-    IMAGENET1K_V1 = Weights(
-        url="https://download.pytorch.org/models/resnet18-f37072fd.pth",
-        transforms=partial(ImageClassification, crop_size=224),
-        meta={
-            **_COMMON_META,
-            "num_params": 11689512,
-            "recipe": "https://github.com/pytorch/vision/tree/main/references/classification#resnet",
-            "_metrics": {
-                "ImageNet-1K": {
-                    "acc@1": 69.758,
-                    "acc@5": 89.078,
-                }
-            },
-            "_ops": 1.814,
-            "_file_size": 44.661,
-            "_docs": """These weights reproduce closely the results of the paper using a simple training recipe.""",
-        },
-    )
-    DEFAULT = IMAGENET1K_V1
-
 class SkipLayer(torch.nn.Module):
     """
     This layer is made to take the place of any layer that needs to be skipped over
@@ -66,7 +45,7 @@ class SkipLayer(torch.nn.Module):
                 tensors.
         """
         return x
-        
+
 def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
