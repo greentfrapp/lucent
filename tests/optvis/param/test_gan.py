@@ -66,17 +66,17 @@ def test_pool5gan_load():
 def assert_gan_gradient_descent(GANparam, objective, model):
     params, image = GANparam()
     optimizer = torch.optim.Adam(params, lr=0.05)
-    T = render.hook_model(model, image)
-    objective_f = objectives.as_objective(objective)
-    model(image())
-    start_value = objective_f(T)
-    for _ in range(NUM_STEPS):
-        optimizer.zero_grad()
+    with render.ModelHook(model, image) as T:
+        objective_f = objectives.as_objective(objective)
         model(image())
-        loss = objective_f(T)
-        loss.backward()
-        optimizer.step()
-    end_value = objective_f(T)
+        start_value = objective_f(T)
+        for _ in range(NUM_STEPS):
+            optimizer.zero_grad()
+            model(image())
+            loss = objective_f(T)
+            loss.backward()
+            optimizer.step()
+        end_value = objective_f(T)
     assert start_value > end_value
 
 

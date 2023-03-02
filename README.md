@@ -72,7 +72,7 @@ Here, we have tried to recreate some of the Lucid notebooks! You can also check 
 
 * [Feature Visualization](https://distill.pub/2017/feature-visualization/)
 * [The Building Blocks of Interpretability](https://distill.pub/2018/building-blocks/)
-* [Using Artiﬁcial Intelligence to Augment Human Intelligence](https://distill.pub/2017/aia/)
+* [Using Artificial Intelligence to Augment Human Intelligence](https://distill.pub/2017/aia/)
 * [Visualizing Representations: Deep Learning and Human Beings](http://colah.github.io/posts/2015-01-Visualizing-Representations/)
 * [Differentiable Image Parameterizations](https://distill.pub/2018/differentiable-parameterizations/)
 * [Activation Atlas](https://distill.pub/2019/activation-atlas/)

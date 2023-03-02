@@ -40,17 +40,17 @@ def inceptionv1_model():
 def assert_gradient_descent(objective, model):
     params, image = param.image(224, batch=2)
     optimizer = torch.optim.Adam(params, lr=0.05)
-    T = render.hook_model(model, image)
-    objective_f = objectives.as_objective(objective)
-    model(image())
-    start_value = objective_f(T)
-    for _ in range(NUM_STEPS):
-        optimizer.zero_grad()
+    with render.ModelHook(model, image) as T:
+        objective_f = objectives.as_objective(objective)
         model(image())
-        loss = objective_f(T)
-        loss.backward()
-        optimizer.step()
-    end_value = objective_f(T)
+        start_value = objective_f(T)
+        for _ in range(NUM_STEPS):
+            optimizer.zero_grad()
+            model(image())
+            loss = objective_f(T)
+            loss.backward()
+            optimizer.step()
+        end_value = objective_f(T)
     assert start_value > end_value
 
 

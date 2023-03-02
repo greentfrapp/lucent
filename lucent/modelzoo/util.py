@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
+import torch
 
 
 def get_model_layers(model, getLayerRepr=False):
@@ -37,6 +38,9 @@ def get_model_layers(model, getLayerRepr=False):
                 else:
                     layers.append("_".join(prefix + [name]))
                 get_layers(layer, prefix=prefix+[name])
+
+    if isinstance(model, torch.nn.DataParallel):
+        model = model.module
 
     get_layers(model)
     return layers
