@@ -15,22 +15,23 @@
 
 from __future__ import absolute_import, division, print_function
 
+from typing import Callable, Sequence
+
+import kornia
+import numpy as np
 import torch
 import torch.nn.functional as F
-from torchvision.transforms import Normalize
-import numpy as np
-import kornia
 from kornia.geometry.transform import translate
-
+from torchvision.transforms import Normalize
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 KORNIA_VERSION = kornia.__version__
 
 
-def jitter(d):
+def jitter(d: int) -> Callable[[torch.Tensor], torch.Tensor]:
     assert d > 1, "Jitter parameter d must be more than 1, currently {}".format(d)
 
-    def inner(image_t):
+    def inner(image_t: torch.Tensor) -> torch.Tensor:
         dx = np.random.choice(d)
         dy = np.random.choice(d)
         return translate(image_t, torch.tensor([[dx, dy]]).float().to(device))
@@ -38,21 +39,28 @@ def jitter(d):
     return inner
 
 
-def pad(w, mode="reflect", constant_value=0.5):
+def pad(
+    w: int, mode: str = "reflect", constant_value: float = 0.5
+) -> Callable[[torch.Tensor], torch.Tensor]:
     if mode != "constant":
         constant_value = 0
 
-    def inner(image_t):
-        return F.pad(image_t, [w] * 4, mode=mode, value=constant_value,)
+    def inner(image_t: torch.Tensor) -> torch.Tensor:
+        return F.pad(
+            image_t,
+            [w] * 4,
+            mode=mode,
+            value=constant_value,
+        )
 
     return inner
 
 
-def random_scale(scales):
-    def inner(image_t):
+def random_scale(scales: Sequence[float]) -> Callable[[torch.Tensor], torch.Tensor]:
+    def inner(image_t: torch.Tensor) -> torch.Tensor:
         scale = np.random.choice(scales)
         shp = image_t.shape[2:]
-        scale_shape = [_roundup(scale * d) for d in shp]
+        scale_shape = tuple([_roundup(scale * d) for d in shp])
         pad_x = max(0, _roundup((shp[1] - scale_shape[1]) / 2))
         pad_y = max(0, _roundup((shp[0] - scale_shape[0]) / 2))
         upsample = torch.nn.Upsample(
@@ -63,13 +71,15 @@ def random_scale(scales):
     return inner
 
 
-def random_rotate(angles, units="degrees"):
-    def inner(image_t):
+def random_rotate(
+    angles: Sequence[float], units: str = "degrees"
+) -> Callable[[torch.Tensor], torch.Tensor]:
+    def inner(image_t: torch.Tensor) -> torch.Tensor:
         b, _, h, w = image_t.shape
         # kornia takes degrees
         alpha = _rads2angle(np.random.choice(angles), units)
         angle = torch.ones(b) * alpha
-        if KORNIA_VERSION < '0.4.0':
+        if KORNIA_VERSION < "0.4.0":
             scale = torch.ones(b)
         else:
             scale = torch.ones(b, 2)
@@ -83,8 +93,10 @@ def random_rotate(angles, units="degrees"):
     return inner
 
 
-def compose(transforms):
-    def inner(x):
+def compose(
+    transforms: Sequence[Callable[[torch.Tensor], torch.Tensor]]
+) -> Callable[[torch.Tensor], torch.Tensor]:
+    def inner(x: torch.Tensor) -> torch.Tensor:
         for transform in transforms:
             x = transform(x)
         return x
@@ -92,11 +104,11 @@ def compose(transforms):
     return inner
 
 
-def _roundup(value):
+def _roundup(value: float) -> int:
     return np.ceil(value).astype(int)
 
 
-def _rads2angle(angle, units):
+def _rads2angle(angle: float, units: str) -> float:
     if units.lower() == "degrees":
         return angle
     if units.lower() in ["radians", "rads", "rad"]:
@@ -104,7 +116,7 @@ def _rads2angle(angle, units):
     return angle
 
 
-def normalize():
+def normalize() -> Callable[[torch.Tensor], torch.Tensor]:
     # ImageNet normalization for torchvision models
     # see https://pytorch.org/docs/stable/torchvision/models.html
     normal = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
@@ -115,7 +127,7 @@ def normalize():
     return inner
 
 
-def preprocess_inceptionv1():
+def preprocess_inceptionv1() -> Callable[[torch.Tensor], torch.Tensor]:
     # Original Tensorflow's InceptionV1 model
     # takes in [-117, 138]
     # See https://github.com/tensorflow/lucid/blob/master/lucid/modelzoo/other_models/InceptionV1.py#L56

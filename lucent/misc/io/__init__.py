@@ -15,4 +15,4 @@
 # limitations under the License.
 # ==============================================================================
 
-from lucent.misc.io.showing import show
+from lucent.misc.io.showing import show  # noqa: disable=F401

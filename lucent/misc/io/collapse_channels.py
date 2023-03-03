@@ -18,20 +18,23 @@
 from __future__ import absolute_import, division, print_function
 
 import math
+
 import numpy as np
 
 
 def hue_to_rgb(ang, warp=True):
     """Produce an RGB unit vector corresponding to a hue of a given angle."""
-    ang = ang - 360*(ang//360)
-    colors = np.asarray([
-        [1, 0, 0],
-        [1, 1, 0],
-        [0, 1, 0],
-        [0, 1, 1],
-        [0, 0, 1],
-        [1, 0, 1],
-    ])
+    ang = ang - 360 * (ang // 360)
+    colors = np.asarray(
+        [
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 1, 1],
+            [0, 0, 1],
+            [1, 0, 1],
+        ]
+    )
     colors = colors / np.linalg.norm(colors, axis=1, keepdims=True)
     R = 360 / len(colors)
     n = math.floor(ang / R)
@@ -46,7 +49,7 @@ def hue_to_rgb(ang, warp=True):
         else:
             D = 1 - adj(1 - D)
 
-    v = (1-D) * colors[n] + D * colors[(n+1) % len(colors)]
+    v = (1 - D) * colors[n] + D * colors[(n + 1) % len(colors)]
     return v / np.linalg.norm(v)
 
 
@@ -59,10 +62,13 @@ def sparse_channels_to_rgb(array):
     for i in range(channels):
         ang = 360 * i / channels
         color = hue_to_rgb(ang)
-        color = color[tuple(None for _ in range(len(array.shape)-1))]
+        color = color[tuple(None for _ in range(len(array.shape) - 1))]
         rgb += array[..., i, None] * color
 
-    rgb += np.ones(array.shape[:-1])[..., None] * (array.sum(-1) - array.max(-1))[..., None]
+    rgb += (
+        np.ones(array.shape[:-1])[..., None]
+        * (array.sum(-1) - array.max(-1))[..., None]
+    )
     rgb /= 1e-4 + np.linalg.norm(rgb, axis=-1, keepdims=True)
     rgb *= np.linalg.norm(array, axis=-1, keepdims=True)
 

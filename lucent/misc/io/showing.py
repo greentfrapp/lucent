@@ -22,12 +22,12 @@ from __future__ import absolute_import, division, print_function
 # from io import BytesIO
 import base64
 from string import Template
-import numpy as np
+
 import IPython.display
+import numpy as np
 
-from lucent.misc.io.serialize_array import serialize_array, array_to_jsbuffer
 from lucent.misc.io.collapse_channels import collapse_channels
-
+from lucent.misc.io.serialize_array import array_to_jsbuffer, serialize_array
 
 # create logger with module name, e.g. lucid.misc.io.showing
 # log = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def _display_html(html_str):
     IPython.display.display(IPython.display.HTML(html_str))
 
 
-def _image_url(array, fmt='png', mode="data", quality=90, domain=None):
+def _image_url(array, fmt="png", mode="data", quality=90, domain=None):
     """Create a data URL representing an image from a PIL.Image.
 
     Args:
@@ -47,19 +47,20 @@ def _image_url(array, fmt='png', mode="data", quality=90, domain=None):
     Returns:
         URL representing image
     """
-    supported_modes = ("data")
+    supported_modes = "data"
     if mode not in supported_modes:
         message = "Unsupported mode '%s', should be one of '%s'."
         raise ValueError(message, mode, supported_modes)
 
     image_data = serialize_array(array, fmt=fmt, quality=quality, domain=domain)
-    base64_byte_string = base64.b64encode(image_data).decode('ascii')
+    base64_byte_string = base64.b64encode(image_data).decode("ascii")
     return "data:image/" + fmt.upper() + ";base64," + base64_byte_string
 
 
 # public functions
 
-def _image_html(array, width=None, domain=None, fmt='png'):
+
+def _image_html(array, width=None, domain=None, fmt="png"):
     url = _image_url(array, domain=domain, fmt=fmt)
     style = "image-rendering: pixelated;"
     if width is not None:
@@ -67,7 +68,7 @@ def _image_html(array, width=None, domain=None, fmt='png'):
     return """<img src="{url}" style="{style}">""".format(url=url, style=style)
 
 
-def image(array, domain=None, width=None, fmt='png'):
+def image(array, domain=None, width=None, fmt="png"):
     """Display an image.
 
     Args:
@@ -78,9 +79,7 @@ def image(array, domain=None, width=None, fmt='png'):
             size unchanged if None
     """
 
-    _display_html(
-        _image_html(array, width=width, domain=domain, fmt=fmt)
-    )
+    _display_html(_image_html(array, width=width, domain=domain, fmt=fmt))
 
 
 def images(arrays, labels=None, domain=None, width=None):
@@ -102,7 +101,9 @@ def images(arrays, labels=None, domain=None, width=None):
         string += """<div style="margin-right:10px; margin-top: 4px;">
                             {label} <br/>
                             {img_html}
-                        </div>""".format(label=label, img_html=img_html)
+                        </div>""".format(
+            label=label, img_html=img_html
+        )
     string += "</div>"
     _display_html(string)
 
@@ -144,6 +145,7 @@ def show(thing, domain=(0, 1), **kwargs):
             [...] = label with corresponding list item
 
     """
+
     def collapse_if_needed(arr):
         channels = arr.shape[-1]
         if channels not in [1, 3, 4]:
@@ -178,10 +180,11 @@ def show(thing, domain=(0, 1), **kwargs):
         print(repr(thing))
 
 
-def textured_mesh(mesh, texture, background='0xffffff'):
-    texture_data_url = _image_url(texture, fmt='jpeg', quality=90)
+def textured_mesh(mesh, texture, background="0xffffff"):
+    texture_data_url = _image_url(texture, fmt="jpeg", quality=90)
 
-    code = Template('''
+    code = Template(
+        """
     <input id="unfoldBox" type="checkbox" class="control">Unfold</input>
     <input id="shadeBox" type="checkbox" class="control">Shade</input>
 
@@ -312,20 +315,22 @@ def textured_mesh(mesh, texture, background='0xffffff'):
         renderer.render(scene, camera);
     }
     </script>
-    ''').substitute(
-        verts=array_to_jsbuffer(mesh['position'].ravel()),
-        uvs=array_to_jsbuffer(mesh['uv'].ravel()),
-        faces=array_to_jsbuffer(np.uint32(mesh['face'].ravel())),
+    """
+    ).substitute(
+        verts=array_to_jsbuffer(mesh["position"].ravel()),
+        uvs=array_to_jsbuffer(mesh["uv"].ravel()),
+        faces=array_to_jsbuffer(np.uint32(mesh["face"].ravel())),
         tex_data_url=texture_data_url,
         background=background,
     )
     _display_html(code)
 
 
-def animate_sequence(sequence, domain=(0, 1), fmt='png'):
+def animate_sequence(sequence, domain=(0, 1), fmt="png"):
     steps, height, width, _ = sequence.shape
     sequence = np.concatenate(sequence, 1)
-    code = Template('''
+    code = Template(
+        """
     <style> 
         #animation {
             width: ${width}px;
@@ -337,9 +342,10 @@ def animate_sequence(sequence, domain=(0, 1), fmt='png'):
             100% { background-position: -${sequence_width}px; }
         }
     </style><div id='animation'></div>
-    ''').substitute(
+    """
+    ).substitute(
         image_url=_image_url(sequence, domain=domain, fmt=fmt),
-        sequence_width=width*steps,
+        sequence_width=width * steps,
         width=width,
         height=height,
         steps=steps,

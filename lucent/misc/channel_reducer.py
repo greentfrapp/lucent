@@ -27,15 +27,16 @@ try:
 except (AttributeError, ModuleNotFoundError):
     from sklearn.base import BaseEstimator
 
+
 class ChannelReducer(object):
     """Helper for dimensionality reduction to the innermost dimension of a tensor.
 
-  This class wraps sklearn.decomposition classes to help them apply to arbitrary
-  rank tensors. It saves lots of annoying reshaping.
+    This class wraps sklearn.decomposition classes to help them apply to arbitrary
+    rank tensors. It saves lots of annoying reshaping.
 
-  See the original sklearn.decomposition documentation:
-  http://scikit-learn.org/stable/modules/classes.html#module-sklearn.decomposition
-  """
+    See the original sklearn.decomposition documentation:
+    http://scikit-learn.org/stable/modules/classes.html#module-sklearn.decomposition
+    """
 
     def __init__(self, n_components=3, reduction_alg="NMF", **kwargs):
         """

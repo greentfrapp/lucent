@@ -16,31 +16,40 @@
 """Utility functions for modelzoo models."""
 
 from __future__ import absolute_import, division, print_function
+
 from collections import OrderedDict
+from typing import List, Union
+
 import torch
+from torch import nn
 
 
-def get_model_layers(model, getLayerRepr=False):
+def get_model_layers(
+    model: nn.Module, get_layer_representation: bool = False
+) -> Union[OrderedDict[str, str], List[str]]:
     """
-    If getLayerRepr is True, return a OrderedDict of layer names, layer representation string pair.
-    If it's False, just return a list of layer names
+    If get_layer_representation is True, return a OrderedDict of layer names, layer representation
+    string pair. If it's False, just return a list of layer names
     """
-    layers = OrderedDict() if getLayerRepr else []
-    # recursive function to get layers
-    def get_layers(net, prefix=[]):
-        if hasattr(net, "_modules"):
-            for name, layer in net._modules.items():
+    layer_name_representations = OrderedDict()
+
+    def get_layers(module: nn.Module, prefix=[]):
+        # Recursive function to get layers.
+
+        if hasattr(module, "_modules"):
+            for name, layer in module._modules.items():
                 if layer is None:
                     # e.g. GoogLeNet's aux1 and aux2 layers
                     continue
-                if getLayerRepr:
-                    layers["_".join(prefix+[name])] = layer.__repr__()
-                else:
-                    layers.append("_".join(prefix + [name]))
-                get_layers(layer, prefix=prefix+[name])
+                layer_name_representations["_".join(prefix + [name])] = layer.__repr__()
+                get_layers(layer, prefix=prefix + [name])
 
     if isinstance(model, torch.nn.DataParallel):
         model = model.module
 
     get_layers(model)
-    return layers
+
+    if get_layer_representation:
+        return layer_name_representations
+    else:
+        return list(layer_name_representations.keys())

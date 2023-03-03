@@ -40,10 +40,12 @@ class AdditionLayer(nn.Module):
 
 
 class MaxPool2dLayer(nn.Module):
-    def forward(self, tensor, kernel_size=(3, 3), stride=(1, 1),
-                padding=0, ceil_mode=False):
-        return F.max_pool2d(tensor, kernel_size, stride=stride,
-                            padding=padding, ceil_mode=ceil_mode)
+    def forward(
+        self, tensor, kernel_size=(3, 3), stride=(1, 1), padding=0, ceil_mode=False
+    ):
+        return F.max_pool2d(
+            tensor, kernel_size, stride=stride, padding=padding, ceil_mode=ceil_mode
+        )
 
 
 class PadLayer(nn.Module):
@@ -65,13 +67,15 @@ class RedirectedReLU(torch.autograd.Function):
     Note: this means that the gradient is technically "wrong"
     TODO: the original Lucid library has a more sophisticated way of doing this
     """
+
     @staticmethod
     def forward(ctx, input_tensor):
         ctx.save_for_backward(input_tensor)
         return input_tensor.clamp(min=0)
+
     @staticmethod
     def backward(ctx, grad_output):
-        input_tensor, = ctx.saved_tensors
+        (input_tensor,) = ctx.saved_tensors
         grad_input = grad_output.clone()
         grad_input[input_tensor < 0] = grad_input[input_tensor < 0] * 1e-1
         return grad_input
@@ -103,8 +107,20 @@ class LocalResponseNormLayer(nn.Module):
 
 
 class AVGPoolLayer(nn.Module):
-    def forward(self, tensor, kernel_size=(7, 7), stride=(1, 1), padding=(0,),
-                ceil_mode=False, count_include_pad=False):
-        return F.avg_pool2d(tensor, kernel_size=kernel_size, stride=stride,
-                            padding=padding, ceil_mode=ceil_mode,
-                            count_include_pad=count_include_pad)
+    def forward(
+        self,
+        tensor,
+        kernel_size=(7, 7),
+        stride=(1, 1),
+        padding=(0,),
+        ceil_mode=False,
+        count_include_pad=False,
+    ):
+        return F.avg_pool2d(
+            tensor,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            ceil_mode=ceil_mode,
+            count_include_pad=count_include_pad,
+        )

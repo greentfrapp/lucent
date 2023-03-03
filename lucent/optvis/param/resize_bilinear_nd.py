@@ -88,12 +88,12 @@ def resize_bilinear_nd(t, target_shape):
         # Otherwise, we'll resize the next two dimensions...
         # If d+2 doesn't need to be resized, this will just be a null op for it
         new_shape = shape[:]
-        new_shape[d:d+2] = target_shape[d:d+2]
+        new_shape[d : d + 2] = target_shape[d : d + 2]
 
         # The helper collapse_shape() makes our shapes 4-dimensional with
         # the two dimensions we want to deal with on the outside.
-        shape_ = collapse_shape(shape, d, d+2)
-        new_shape_ = collapse_shape(new_shape, d, d+2)
+        shape_ = collapse_shape(shape, d, d + 2)
+        new_shape_ = collapse_shape(new_shape, d, d + 2)
 
         # We can then reshape and use torch.nn.Upsample() on the
         # outer two dimensions.
@@ -101,11 +101,13 @@ def resize_bilinear_nd(t, target_shape):
         # transpose [0, 1, 2, 3] to [0, 3, 1, 2]
         t_ = torch.transpose(t_, 1, 3)
         t_ = torch.transpose(t_, 2, 3)
-        upsample = torch.nn.Upsample(size=new_shape_[1:3], mode='bilinear', align_corners=True)
+        upsample = torch.nn.Upsample(
+            size=new_shape_[1:3], mode="bilinear", align_corners=True
+        )
         t_ = upsample(t_)
         t_ = torch.transpose(t_, 2, 3)
         t_ = torch.transpose(t_, 1, 3)
-        
+
         # And then reshape back to our uncollapsed version, having finished resizing
         # two more dimensions in our shape.
         t = t_.reshape(new_shape)

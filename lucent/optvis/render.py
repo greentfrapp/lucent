@@ -16,31 +16,38 @@
 from __future__ import absolute_import, division, print_function
 
 import warnings
-from collections import OrderedDict
-import numpy as np
-from tqdm import tqdm
-from PIL import Image
-import torch
+from types import TracebackType
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
 
-from lucent.optvis import objectives, transform, param
+import numpy as np
+import torch
+from PIL import Image
+from torch import nn
+from tqdm import tqdm
+
 from lucent.misc.io import show
+from lucent.optvis import objectives, param, transform
+
+ObjectiveT = Union[str, Callable[[torch.Tensor], torch.Tensor]]
+ParamT = Callable[[], Tuple[Sequence[torch.Tensor], Callable[[], torch.Tensor]]]
+OptimizerT = Callable[[Sequence[torch.Tensor]], torch.optim.Optimizer]
 
 
 def render_vis(
-    model,
-    objective_f,
-    param_f=None,
-    optimizer=None,
-    transforms=None,
-    thresholds=(512,),
-    verbose=False,
-    preprocess=True,
-    progress=True,
-    show_image=True,
-    save_image=False,
-    image_name=None,
-    show_inline=False,
-    fixed_image_size=None,
+    model: nn.Module,
+    objective_f: ObjectiveT,
+    param_f: Optional[ParamT] = None,
+    optimizer_f: Optional[OptimizerT] = None,
+    transforms: Optional[List[Callable[[torch.Tensor], torch.Tensor]]] = None,
+    thresholds: Sequence[int] = (512,),
+    verbose: bool = False,
+    preprocess: bool = True,
+    progress: bool = True,
+    show_image: bool = True,
+    save_image: bool = False,
+    image_name: Optional[str] = None,
+    show_inline: bool = False,
+    fixed_image_size: Optional[int] = None,
 ):
     if param_f is None:
         param_f = lambda: param.image(128)
@@ -49,9 +56,9 @@ def render_vis(
     # image_f - a function that returns an image as a tensor
     params, image_f = param_f()
 
-    if optimizer is None:
-        optimizer = lambda params: torch.optim.Adam(params, lr=5e-2)
-    optimizer = optimizer(params)
+    if optimizer_f is None:
+        optimizer_f = lambda params: torch.optim.Adam(params, lr=5e-2)
+    optimizer = optimizer_f(params)
 
     if transforms is None:
         transforms = transform.standard_transforms
@@ -81,9 +88,9 @@ def render_vis(
 
     transform_f = transform.compose(transforms)
 
-    with ModelHook(model, image_f) as hook:
-        objective_f = objectives.as_objective(objective_f)
+    objective_f = objectives.as_objective(objective_f)
 
+    with ModelHook(model, image_f) as hook:
         if verbose:
             model(transform_f(image_f()))
             print("Initial loss: {:.3f}".format(objective_f(hook)))
@@ -91,6 +98,7 @@ def render_vis(
         images = []
         try:
             for i in tqdm(range(1, max(thresholds) + 1), disable=(not progress)):
+
                 def closure():
                     optimizer.zero_grad()
                     try:
@@ -133,13 +141,13 @@ def render_vis(
     return images
 
 
-def tensor_to_img_array(tensor):
+def tensor_to_img_array(tensor: torch.Tensor):
     image = tensor.cpu().detach().numpy()
     image = np.transpose(image, [0, 2, 3, 1])
     return image
 
 
-def view(tensor):
+def view(tensor: torch.Tensor):
     image = tensor_to_img_array(tensor)
     assert len(image.shape) in [
         3,
@@ -152,7 +160,7 @@ def view(tensor):
     Image.fromarray(image).show()
 
 
-def export(tensor, image_name=None):
+def export(tensor: torch.Tensor, image_name: Optional[str] = None):
     image_name = image_name or "image.jpg"
     image = tensor_to_img_array(tensor)
     assert len(image.shape) in [
@@ -167,10 +175,10 @@ def export(tensor, image_name=None):
 
 
 class ModuleHook:
-    def __init__(self, module):
+    def __init__(self, module: nn.Module):
         self.hook = module.register_forward_hook(self.hook_fn)
-        self.module = None
-        self._features = dict()
+        # self.module = None
+        self._features: Dict[str, torch.Tensor] = dict()
 
     @property
     def features(self):
@@ -182,8 +190,8 @@ class ModuleHook:
         else:
             return torch.nn.parallel.gather([self._features[k] for k in keys], keys[0])
 
-    def hook_fn(self, module, input, output):
-        self.module = module
+    def hook_fn(self, module: nn.Module, input: torch.Tensor, output: torch.Tensor):
+        # self.module = module
         device = output.device
         self._features[str(device)] = output
 
@@ -192,12 +200,17 @@ class ModuleHook:
 
 
 class ModelHook:
-    def __init__(self, model, image_f=None, layer_names=None):
+    def __init__(
+        self,
+        model: nn.Module,
+        image_f: Optional[Callable[[], torch.Tensor]] = None,
+        layer_names: Optional[Sequence[int]] = None,
+    ):
         self.model = model
         self.image_f = image_f
-        self.features = {}
+        self.features: Dict[str, ModuleHook] = {}
         self.layer_names = layer_names
-       
+
     def __enter__(self):
         # recursive hooking function
         def hook_layers(net, prefix=[]):
@@ -212,31 +225,38 @@ class ModelHook:
                         # only save activations for chosen layers
                         if name not in self.layer_names:
                             continue
-                    
+
                     self.features["_".join(prefix + [name])] = ModuleHook(layer)
                     hook_layers(layer, prefix=prefix + [name])
 
-        if isinstance(self.model, torch.nn.DataParallel):   
+        if isinstance(self.model, torch.nn.DataParallel):
             hook_layers(self.model.module)
         else:
             hook_layers(self.model)
-        
+
         def hook(layer):
             if layer == "input":
                 out = self.image_f()
             elif layer == "labels":
                 out = list(self.features.values())[-1].features
             else:
-                assert layer in self.features, f"Invalid layer {layer}. Retrieve the list of layers with `lucent.modelzoo.util.get_model_layers(model)`."
+                assert (
+                    layer in self.features
+                ), f"Invalid layer {layer}. Retrieve the list of layers with `lucent.modelzoo.util.get_model_layers(model)`."
                 out = self.features[layer].features
-            assert out is not None, "There are no saved feature maps. Make sure to put the model in eval mode, like so: `model.to(device).eval()`. See README for example."
+            assert (
+                out is not None
+            ), "There are no saved feature maps. Make sure to put the model in eval mode, like so: `model.to(device).eval()`. See README for example."
             return out
 
         return hook
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ):
         for k in self.features.copy():
             self.features[k].close()
             del self.features[k]
-        
-        
