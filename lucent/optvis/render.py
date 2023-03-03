@@ -16,8 +16,7 @@
 from __future__ import absolute_import, division, print_function
 
 import warnings
-from types import TracebackType
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -27,6 +26,7 @@ from tqdm import tqdm
 
 from lucent.misc.io import show
 from lucent.optvis import objectives, param, transform
+from lucent.optvis.hooks import ModelHook
 
 ObjectiveT = Union[str, Callable[[torch.Tensor], torch.Tensor]]
 ParamT = Callable[[], Tuple[Sequence[torch.Tensor], Callable[[], torch.Tensor]]]
@@ -48,6 +48,9 @@ def render_vis(
     image_name: Optional[str] = None,
     show_inline: bool = False,
     fixed_image_size: Optional[int] = None,
+    iteration_callback: Optional[
+        Callable[[ModelHook, torch.Tensor, torch.Tensor], None]
+    ] = None,
 ):
     if param_f is None:
         param_f = lambda: param.image(128)
@@ -98,27 +101,24 @@ def render_vis(
         images = []
         try:
             for i in tqdm(range(1, max(thresholds) + 1), disable=(not progress)):
+                optimizer.zero_grad()
+                try:
+                    model(transform_f(image_f()))
+                except RuntimeError as ex:
+                    if i == 1:
+                        # Only display the warning message
+                        # on the first iteration, no need to do that
+                        # every iteration
+                        warnings.warn(
+                            "Some layers could not be computed because the size of the "
+                            "image is not big enough. It is fine, as long as the non"
+                            "computed layers are not used in the objective function"
+                            f"(exception details: '{ex}')"
+                        )
+                loss = objective_f(hook)
+                loss.backward()
+                optimizer.step()
 
-                def closure():
-                    optimizer.zero_grad()
-                    try:
-                        model(transform_f(image_f()))
-                    except RuntimeError as ex:
-                        if i == 1:
-                            # Only display the warning message
-                            # on the first iteration, no need to do that
-                            # every iteration
-                            warnings.warn(
-                                "Some layers could not be computed because the size of the "
-                                "image is not big enough. It is fine, as long as the non"
-                                "computed layers are not used in the objective function"
-                                f"(exception details: '{ex}')"
-                            )
-                    loss = objective_f(hook)
-                    loss.backward()
-                    return loss
-
-                optimizer.step(closure)
                 if i in thresholds:
                     image = tensor_to_img_array(image_f())
                     if verbose:
@@ -126,6 +126,8 @@ def render_vis(
                         if show_inline:
                             show(image)
                     images.append(image)
+                if iteration_callback:
+                    iteration_callback(hook, loss, image_f())
         except KeyboardInterrupt:
             print("Interrupted optimization at step {:d}.".format(i))
             if verbose:
@@ -172,91 +174,3 @@ def export(tensor: torch.Tensor, image_name: Optional[str] = None):
     if len(image.shape) == 4:
         image = np.concatenate(image, axis=1)
     Image.fromarray(image).save(image_name)
-
-
-class ModuleHook:
-    def __init__(self, module: nn.Module):
-        self.hook = module.register_forward_hook(self.hook_fn)
-        # self.module = None
-        self._features: Dict[str, torch.Tensor] = dict()
-
-    @property
-    def features(self):
-        keys = list(sorted(self._features.keys()))
-        if len(keys) == 0:
-            return None
-        elif len(keys) == 1:
-            return self._features[keys[0]]
-        else:
-            return torch.nn.parallel.gather([self._features[k] for k in keys], keys[0])
-
-    def hook_fn(self, module: nn.Module, input: torch.Tensor, output: torch.Tensor):
-        # self.module = module
-        device = output.device
-        self._features[str(device)] = output
-
-    def close(self):
-        self.hook.remove()
-
-
-class ModelHook:
-    def __init__(
-        self,
-        model: nn.Module,
-        image_f: Optional[Callable[[], torch.Tensor]] = None,
-        layer_names: Optional[Sequence[int]] = None,
-    ):
-        self.model = model
-        self.image_f = image_f
-        self.features: Dict[str, ModuleHook] = {}
-        self.layer_names = layer_names
-
-    def __enter__(self):
-        # recursive hooking function
-        def hook_layers(net, prefix=[]):
-            if hasattr(net, "_modules"):
-                layers = list(net._modules.items())
-                for i, (name, layer) in enumerate(layers):
-                    if layer is None:
-                        # e.g. GoogLeNet's aux1 and aux2 layers
-                        continue
-
-                    if self.layer_names is not None and i < len(layers) - 1:
-                        # only save activations for chosen layers
-                        if name not in self.layer_names:
-                            continue
-
-                    self.features["_".join(prefix + [name])] = ModuleHook(layer)
-                    hook_layers(layer, prefix=prefix + [name])
-
-        if isinstance(self.model, torch.nn.DataParallel):
-            hook_layers(self.model.module)
-        else:
-            hook_layers(self.model)
-
-        def hook(layer):
-            if layer == "input":
-                out = self.image_f()
-            elif layer == "labels":
-                out = list(self.features.values())[-1].features
-            else:
-                assert (
-                    layer in self.features
-                ), f"Invalid layer {layer}. Retrieve the list of layers with `lucent.modelzoo.util.get_model_layers(model)`."
-                out = self.features[layer].features
-            assert (
-                out is not None
-            ), "There are no saved feature maps. Make sure to put the model in eval mode, like so: `model.to(device).eval()`. See README for example."
-            return out
-
-        return hook
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ):
-        for k in self.features.copy():
-            self.features[k].close()
-            del self.features[k]
