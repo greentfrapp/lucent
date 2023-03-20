@@ -57,7 +57,7 @@ class Objective:
         return Objective(objective_func, name=name, description=description)
 
     @staticmethod
-    def sum(objs: Sequence[Objective]):
+    def sum(objs: Sequence["Objective"]):
         objective_func = lambda T: sum([obj(T) for obj in objs])
         descriptions = [obj.description for obj in objs]
         description = "Sum(" + " +\n".join(descriptions) + ")"
