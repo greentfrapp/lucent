@@ -31,6 +31,7 @@ set_seed(137)
 NUM_STEPS = 5
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+
 @pytest.fixture
 def inceptionv1_model():
     model = inceptionv1().to(device).eval()
@@ -63,15 +64,25 @@ def test_channel(inceptionv1_model):
     objective = objectives.channel("mixed3a_1x1_pre_relu_conv", 0)
     assert_gradient_descent(objective, inceptionv1_model)
 
+
 def test_neuron_weight(inceptionv1_model):
     weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
-    objective = objectives.neuron_weight("mixed3a_1x1_pre_relu_conv", weight, x=None, y=None,)
+    objective = objectives.neuron_weight(
+        "mixed3a_1x1_pre_relu_conv",
+        weight,
+        x=None,
+        y=None,
+    )
     assert_gradient_descent(objective, inceptionv1_model)
+
 
 def test_localgroup_weight(inceptionv1_model):
     weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
-    objective = objectives.localgroup_weight("mixed3a_1x1_pre_relu_conv", weight, x=10, y=10, wx=3, wy=3)  # a 3 by 3 square start from (10, 10)
+    objective = objectives.localgroup_weight(
+        "mixed3a_1x1_pre_relu_conv", weight, x=10, y=10, wx=3, wy=3
+    )  # a 3 by 3 square start from (10, 10)
     assert_gradient_descent(objective, inceptionv1_model)
+
 
 def test_channel_weight(inceptionv1_model):
     weight = torch.randn(64).to(device)  # 64 is the channel number of that layer
@@ -103,8 +114,10 @@ def test_div(inceptionv1_model):
 
 
 def test_sub_objectives():
-    objective_values = [objectives.channel("mixed4a", 0),
-                        objectives.channel("mixed5a", 1)]
+    objective_values = [
+        objectives.channel("mixed4a", 0),
+        objectives.channel("mixed5a", 1),
+    ]
     objective_a = objectives.Objective.sum(objective_values)
     objective_b = -1 * objective_values[0] + 2 * objective_values[1]
     assert objective_a.sub_objectives == objective_values
@@ -135,11 +148,11 @@ def test_diversity(inceptionv1_model):
 
 def test_direction(inceptionv1_model):
     direction = torch.rand(512) * 1000
-    objective = objectives.direction(layer='mixed4c', direction=direction)
+    objective = objectives.direction(layer="mixed4c", direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)
 
 
 def test_direction_neuron(inceptionv1_model):
     direction = torch.rand(512) * 1000
-    objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
+    objective = objectives.direction_neuron(layer="mixed4c", direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)

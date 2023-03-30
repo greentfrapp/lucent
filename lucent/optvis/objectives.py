@@ -34,8 +34,11 @@ ObjectiveT = Callable[[nn.Module], torch.Tensor]
 
 class Objective:
     def __init__(
-        self, objective_func: ObjectiveT, name: str = "", description: str = "",
-            sub_objectives: Optional[Sequence["Objective"]] = None,
+        self,
+        objective_func: ObjectiveT,
+        name: str = "",
+        description: str = "",
+        sub_objectives: Optional[Sequence["Objective"]] = None,
     ):
         self.objective_func = objective_func
         self.name = name
@@ -60,8 +63,13 @@ class Objective:
                 "Sum(" + " +\n".join([self.description, other.description]) + ")"
             )
             sub_objectives = [self, other]
-        return Objective(objective_func, name=name, description=description,
-                         sub_objectives=sub_objectives)
+
+        return Objective(
+            objective_func,
+            name=name,
+            description=description,
+            sub_objectives=sub_objectives,
+        )
 
     @staticmethod
     def sum(objs: Sequence["Objective"]):
@@ -71,8 +79,13 @@ class Objective:
         sub_objectives = objs
         names = [obj.name for obj in objs]
         name = ", ".join(names)
-        return Objective(objective_func, name=name, description=description,
-                         sub_objectives=sub_objectives)
+
+        return Objective(
+            objective_func,
+            name=name,
+            description=description,
+            sub_objectives=sub_objectives,
+        )
 
     def __neg__(self):
         return -1 * self
@@ -84,17 +97,22 @@ class Objective:
         if isinstance(other, (int, float)):
             objective_func = lambda model: other * self(model)
             return Objective(
-                objective_func, name=self.name, description=self.description,
-                sub_objectives=[self]
+                objective_func,
+                name=self.name,
+                description=self.description,
+                sub_objectives=[self],
             )
         elif isinstance(other, Objective):
             objective_func = lambda model: other(model) * self(model)
             description = (
-                    "Mult(" + " +\n".join([self.description, other.description]) + ")"
+                "Mult(" + " +\n".join([self.description, other.description]) + ")"
             )
+
             return Objective(
-                objective_func, name=self.name, description=description,
-                sub_objectives=[self, other]
+                objective_func,
+                name=self.name,
+                description=description,
+                sub_objectives=[self, other],
             )
         else:
             # Note: In original Lucid library, objectives can be multiplied with non-numbers
@@ -110,11 +128,14 @@ class Objective:
         elif isinstance(other, Objective):
             objective_func = lambda model: other(model) * self(model)
             description = (
-                    "Div(" + " +\n".join([self.description, other.description]) + ")"
+                "Div(" + " +\n".join([self.description, other.description]) + ")"
             )
+
             return Objective(
-                objective_func, name=self.name, description=description,
-                sub_objectives=[self, other]
+                objective_func,
+                name=self.name,
+                description=description,
+                sub_objectives=[self, other],
             )
         else:
             raise TypeError(
