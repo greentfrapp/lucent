@@ -127,6 +127,19 @@ def normalize() -> Callable[[torch.Tensor], torch.Tensor]:
     return inner
 
 
+def center_crop(h: int, w: int) -> Callable[[torch.Tensor], torch.Tensor]:
+    def inner(x: torch.Tensor) -> torch.Tensor:
+        assert x.shape[2] >= h
+        assert x.shape[3] >= w
+
+        oy = (x.shape[2] - h) // 2
+        ox = (x.shape[3] - w) // 2
+
+        return x[:, :, oy:oy+h, ox:ox+w]
+
+    return inner
+
+
 def preprocess_inceptionv1() -> Callable[[torch.Tensor], torch.Tensor]:
     # Original Tensorflow's InceptionV1 model
     # takes in [-117, 138]
@@ -141,4 +154,5 @@ standard_transforms = [
     random_scale([1 + (i - 5) / 50.0 for i in range(11)]),
     random_rotate(list(range(-10, 11)) + 5 * [0]),
     jitter(4),
+    center_crop(224, 224)
 ]
