@@ -86,8 +86,11 @@ def random_rotate(
         center = torch.ones(b, 2)
         center[..., 0] = (image_t.shape[3] - 1) / 2
         center[..., 1] = (image_t.shape[2] - 1) / 2
-        M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
-        rotated_image = kornia.warp_affine(image_t.float(), M, dsize=(h, w))
+        M = kornia.geometry.transform.get_rotation_matrix2d(
+            center, angle, scale).to(device)
+        rotated_image = kornia.geometry.transform.warp_affine(
+            image_t.float(), M, dsize=(h, w))
+        print(image_t.shape, rotated_image.shape)
         return rotated_image
 
     return inner
@@ -128,14 +131,22 @@ def normalize() -> Callable[[torch.Tensor], torch.Tensor]:
 
 
 def center_crop(h: int, w: int) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Center crop the image to at most the given height and width.
+
+    If the image is smaller than the given height and width, then the image is
+    returned as is.
+    """
     def inner(x: torch.Tensor) -> torch.Tensor:
-        assert x.shape[2] >= h
-        assert x.shape[3] >= w
+        if x.shape[2] >= h and x.shape[3] >= w:
+            oy = (x.shape[2] - h) // 2
+            ox = (x.shape[3] - w) // 2
 
-        oy = (x.shape[2] - h) // 2
-        ox = (x.shape[3] - w) // 2
-
-        return x[:, :, oy:oy+h, ox:ox+w]
+            return x[:, :, oy:oy + h, ox:ox + w]
+        elif x.shape[2] < h and x.shape[3] < w:
+            return x
+        else:
+            raise ValueError("Either both width and height must be smaller than the "
+                             "image, or both must be larger.")
 
     return inner
 
