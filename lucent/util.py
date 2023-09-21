@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
 import torch
 import random
 
@@ -27,3 +28,4 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic=True
     random.seed(seed)
+    np.random.seed(seed)
