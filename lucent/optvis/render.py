@@ -136,6 +136,10 @@ def render_vis(
 def tensor_to_img_array(tensor):
     image = tensor.cpu().detach().numpy()
     image = np.transpose(image, [0, 2, 3, 1])
+    # Check if the image is single channel and convert to 3-channel
+    if len(image.shape) == 4 and image.shape[3] == 1:  # Single channel image
+        image = np.repeat(image, 3, axis=3)  
+    image = (image * 255).astype(np.uint8)  
     return image
 
 
