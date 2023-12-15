@@ -52,7 +52,7 @@ def random_scale(scales):
     def inner(image_t):
         scale = np.random.choice(scales)
         shp = image_t.shape[2:]
-        scale_shape = [_roundup(scale * d) for d in shp]
+        scale_shape = [int(_roundup(scale * d)) for d in shp]
         pad_x = max(0, _roundup((shp[1] - scale_shape[1]) / 2))
         pad_y = max(0, _roundup((shp[0] - scale_shape[0]) / 2))
         upsample = torch.nn.Upsample(
