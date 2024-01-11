@@ -27,6 +27,24 @@ model_urls = {"pool5" : "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829
             "fc7": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145338&authkey=AJ0R-daUAVYjQIw",
             "fc8": "https://onedrive.live.com/download?cid=9CFFF6BCB39F6829&resid=9CFFF6BCB39F6829%2145340&authkey=AKIfNk7s5MGrRkU"}
 
+def download_url_to_file_fake_request(url, dst):
+    """
+    Download object at the given URL to a local path, using browser-like HTTP GET request.
+    """
+
+    import requests
+    from tqdm import tqdm
+
+    # Imitate Chrome browser
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) "
+                                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                "Chrome/76.0.3809.132 Safari/537.36"}
+
+    with requests.get(url, headers=headers, stream=True) as r:
+        r.raise_for_status()
+        with open(dst, 'wb') as f:
+            for chunk in tqdm(r.iter_content(chunk_size=8192)):
+                f.write(chunk)
 
 def load_statedict_from_online(name="fc6"):
     torchhome = torch.hub._get_torch_home()
@@ -34,8 +52,12 @@ def load_statedict_from_online(name="fc6"):
     os.makedirs(ckpthome, exist_ok=True)
     filepath = join(ckpthome, "upconvGAN_%s.pt"%name)
     if not os.path.exists(filepath):
-        torch.hub.download_url_to_file(model_urls[name], filepath, hash_prefix=None,
-                                   progress=True)
+        print("Downloading %s"%model_urls[name])
+        download_url_to_file_fake_request(model_urls[name], filepath)
+
+        # this is blocked by onedrive
+        #torch.hub.download_url_to_file(model_urls[name], filepath, hash_prefix=None,
+        #                           progress=True)
     SD = torch.load(filepath)
     return SD
 
