@@ -18,12 +18,13 @@ from __future__ import absolute_import, division, print_function
 import torch
 import numpy as np
 
+from lucent.util import DEFAULT_DEVICE
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 TORCH_VERSION = torch.__version__
 
 
-def pixel_image(shape, sd=None):
+def pixel_image(shape, sd=None, device=DEFAULT_DEVICE):
     sd = sd or 0.01
     tensor = (torch.randn(*shape) * sd).to(device).requires_grad_(True)
     return [tensor], lambda: tensor
@@ -42,7 +43,7 @@ def rfft2d_freqs(h, w):
     return np.sqrt(fx * fx + fy * fy)
 
 
-def fft_image(shape, sd=None, decay_power=1):
+def fft_image(shape, sd=None, decay_power=1, device=DEFAULT_DEVICE):
     batch, channels, h, w = shape
     freqs = rfft2d_freqs(h, w)
     init_val_size = (batch, channels) + freqs.shape + (2,) # 2 for imaginary and real components

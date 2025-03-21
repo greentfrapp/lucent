@@ -15,11 +15,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import pytest
-
 import torch
-import numpy as np
-from lucent.optvis import param, render, objectives
+from lucent.optvis import param, objectives
 
 
 def xor_loss(T):

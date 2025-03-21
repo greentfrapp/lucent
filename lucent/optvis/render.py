@@ -43,7 +43,7 @@ def render_vis(
     fixed_image_size=None,
 ):
     if param_f is None:
-        param_f = lambda: param.image(128)
+        param_f = lambda: param.image(128, device=next(model.parameters()).device)
     # param_f is a function that should return two things
     # params - parameters to update, which we pass to the optimizer
     # image_f - a function that returns an image as a tensor
@@ -81,7 +81,7 @@ def render_vis(
 
     transform_f = transform.compose(transforms)
 
-    hook = hook_model(model, image_f)
+    hook, features = hook_model(model, image_f, return_hooks=True)
     objective_f = objectives.as_objective(objective_f)
 
     if verbose:
@@ -124,6 +124,10 @@ def render_vis(
             print("Loss at step {}: {:.3f}".format(i, objective_f(hook)))
         images.append(tensor_to_img_array(image_f()))
 
+    # Clear hooks
+    for module_hook in features.values():
+        del module_hook.module._forward_hooks[module_hook.hook.id]
+
     if save_image:
         export(image_f(), image_name)
     if show_inline:
@@ -136,6 +140,9 @@ def render_vis(
 def tensor_to_img_array(tensor):
     image = tensor.cpu().detach().numpy()
     image = np.transpose(image, [0, 2, 3, 1])
+    # Check if the image is single channel and convert to 3-channel
+    if len(image.shape) == 4 and image.shape[3] == 1:  # Single channel image
+        image = np.repeat(image, 3, axis=3)
     return image
 
 
@@ -149,6 +156,8 @@ def view(tensor):
     image = (image * 255).astype(np.uint8)
     if len(image.shape) == 4:
         image = np.concatenate(image, axis=1)
+    if len(image.shape) == 3 and image.shape[2] == 1:
+        image = image.squeeze(2)
     Image.fromarray(image).show()
 
 
@@ -177,10 +186,11 @@ class ModuleHook:
         self.features = output
 
     def close(self):
+        # This doesn't actually do anything
         self.hook.remove()
 
 
-def hook_model(model, image_f):
+def hook_model(model, image_f, return_hooks=False):
     features = OrderedDict()
 
     # recursive hooking function
@@ -206,4 +216,6 @@ def hook_model(model, image_f):
         assert out is not None, "There are no saved feature maps. Make sure to put the model in eval mode, like so: `model.to(device).eval()`. See README for example."
         return out
 
+    if return_hooks:
+        return hook, features
     return hook

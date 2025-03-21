@@ -31,9 +31,8 @@ color_mean = [0.48, 0.46, 0.41]
 
 
 def _linear_decorrelate_color(tensor):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     t_permute = tensor.permute(0, 2, 3, 1)
-    t_permute = torch.matmul(t_permute, torch.tensor(color_correlation_normalized.T).to(device))
+    t_permute = torch.matmul(t_permute, torch.tensor(color_correlation_normalized.T).to(t_permute.device))
     tensor = t_permute.permute(0, 3, 1, 2)
     return tensor
 

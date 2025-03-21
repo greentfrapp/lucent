@@ -231,14 +231,13 @@ def direction_neuron(layer,
 
 
 def _torch_blur(tensor, out_c=3):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     depth = tensor.shape[1]
     weight = np.zeros([depth, depth, out_c, out_c])
     for ch in range(depth):
         weight_ch = weight[ch, ch, :, :]
         weight_ch[ :  ,  :  ] = 0.5
         weight_ch[1:-1, 1:-1] = 1.0
-    weight_t = torch.tensor(weight).float().to(device)
+    weight_t = torch.tensor(weight).float().to(tensor.device)
     conv_f = lambda t: F.conv2d(t, weight_t, None, 1, 1)
     return conv_f(tensor) / conv_f(torch.ones_like(tensor))
 

@@ -18,18 +18,17 @@ from __future__ import absolute_import, division, print_function
 import pytest
 
 import torch
-import random
-import numpy as np
 from lucent.util import set_seed
 from lucent.optvis import objectives, param, render
 from lucent.modelzoo import inceptionv1
+from lucent.util import DEFAULT_DEVICE
 
 
 set_seed(137)
 
 
 NUM_STEPS = 5
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device(DEFAULT_DEVICE)
 
 @pytest.fixture
 def inceptionv1_model():
@@ -120,12 +119,12 @@ def test_diversity(inceptionv1_model):
 
 
 def test_direction(inceptionv1_model):
-    direction = torch.rand(512) * 1000
+    direction = torch.rand(512, device=next(inceptionv1_model.parameters()).device) * 1000
     objective = objectives.direction(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)
 
 
 def test_direction_neuron(inceptionv1_model):
-    direction = torch.rand(512) * 1000
+    direction = torch.rand(512, device=next(inceptionv1_model.parameters()).device) * 1000
     objective = objectives.direction_neuron(layer='mixed4c', direction=direction)
     assert_gradient_descent(objective, inceptionv1_model)

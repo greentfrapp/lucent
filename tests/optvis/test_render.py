@@ -17,15 +17,14 @@ from __future__ import absolute_import, division, print_function
 
 import pytest
 
-import torch
 from lucent.optvis import render, param
 from lucent.modelzoo import inceptionv1
+from lucent.util import DEFAULT_DEVICE
 
 
 @pytest.fixture
 def inceptionv1_model():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = inceptionv1().to(device).eval()
+    model = inceptionv1().to(DEFAULT_DEVICE).eval()
     return model
 
 

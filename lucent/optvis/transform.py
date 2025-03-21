@@ -22,8 +22,13 @@ import numpy as np
 import kornia
 from kornia.geometry.transform import translate
 
+try:
+    from kornia import warp_affine, get_rotation_matrix2d
+except ImportError:
+    from kornia.geometry.transform import warp_affine, get_rotation_matrix2d
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
 KORNIA_VERSION = kornia.__version__
 
 
@@ -33,7 +38,7 @@ def jitter(d):
     def inner(image_t):
         dx = np.random.choice(d)
         dy = np.random.choice(d)
-        return translate(image_t, torch.tensor([[dx, dy]]).float().to(device))
+        return translate(image_t, torch.tensor([[dx, dy]]).float().to(image_t.device))
 
     return inner
 
@@ -52,7 +57,7 @@ def random_scale(scales):
     def inner(image_t):
         scale = np.random.choice(scales)
         shp = image_t.shape[2:]
-        scale_shape = [_roundup(scale * d) for d in shp]
+        scale_shape = [int(_roundup(scale * d)) for d in shp]
         pad_x = max(0, _roundup((shp[1] - scale_shape[1]) / 2))
         pad_y = max(0, _roundup((shp[0] - scale_shape[0]) / 2))
         upsample = torch.nn.Upsample(
@@ -76,8 +81,8 @@ def random_rotate(angles, units="degrees"):
         center = torch.ones(b, 2)
         center[..., 0] = (image_t.shape[3] - 1) / 2
         center[..., 1] = (image_t.shape[2] - 1) / 2
-        M = kornia.get_rotation_matrix2d(center, angle, scale).to(device)
-        rotated_image = kornia.warp_affine(image_t.float(), M, dsize=(h, w))
+        M = get_rotation_matrix2d(center, angle, scale).to(image_t.device)
+        rotated_image = warp_affine(image_t.float(), M, dsize=(h, w))
         return rotated_image
 
     return inner

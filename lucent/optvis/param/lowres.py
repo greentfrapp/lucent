@@ -22,9 +22,11 @@ import torch
 import torch.nn.functional as F
 
 from lucent.optvis.param.resize_bilinear_nd import resize_bilinear_nd
+from lucent.util import DEFAULT_DEVICE
 
 
-def lowres_tensor(shape, underlying_shape, offset=None, sd=0.01):
+def lowres_tensor(shape, underlying_shape, offset=None, sd=0.01,
+                  device=DEFAULT_DEVICE):
     """Produces a tensor paramaterized by a interpolated lower resolution tensor.
     This is like what is done in a laplacian pyramid, but a bit more general. It
     can be a powerful way to describe images.
@@ -41,7 +43,7 @@ def lowres_tensor(shape, underlying_shape, offset=None, sd=0.01):
     Returns:
         A tensor paramaterized by a lower resolution tensorflow variable.
     """
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device(device)
     underlying_t = (torch.randn(*underlying_shape) * sd).to(device).requires_grad_(True)
     if offset is not None:
         # Deal with non-list offset

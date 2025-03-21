@@ -17,8 +17,12 @@
 
 from __future__ import absolute_import, division, print_function
 
+import numpy as np
 import torch
 import random
+
+
+DEFAULT_DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def set_seed(seed):
@@ -27,3 +31,4 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic=True
     random.seed(seed)
+    np.random.seed(seed)
