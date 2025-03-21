@@ -22,8 +22,9 @@ jobs:
       - name: Install test dependencies
         run: pip install pytest pytest-cov
 
-      - name: Run tests
-        run: pytest --cov --cov-branch --cov-report=xml
+      - name: Test with pytest
+        run: |
+          pytest --cov --junitxml=junit.xml -o junit_family=legacy
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
