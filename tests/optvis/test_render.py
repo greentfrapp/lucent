@@ -19,12 +19,12 @@ import pytest
 
 from lucent.optvis import render, param
 from lucent.modelzoo import inceptionv1
-from lucent.util import DEFAULT_DEVICE
+import lucent.util as ut
 
 
 @pytest.fixture
 def inceptionv1_model():
-    model = inceptionv1().to(DEFAULT_DEVICE).eval()
+    model = inceptionv1().to(ut.DEFAULT_DEVICE).eval()
     return model
 
 

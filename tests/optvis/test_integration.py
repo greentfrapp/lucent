@@ -20,12 +20,12 @@ import pytest
 import torch
 from lucent.optvis import param, render
 from lucent.modelzoo import inceptionv1
-from lucent.util import DEFAULT_DEVICE
+import lucent.util as ut
 
 
 @pytest.fixture
 def inceptionv1_model():
-    device = torch.device(DEFAULT_DEVICE)
+    device = torch.device(ut.DEFAULT_DEVICE)
     model = inceptionv1().to(device).eval()
     return model
 
