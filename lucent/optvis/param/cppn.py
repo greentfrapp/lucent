@@ -18,8 +18,7 @@ from __future__ import absolute_import, division, print_function
 from collections import OrderedDict
 import torch
 import numpy as np
-
-from lucent.util import DEFAULT_DEVICE
+import lucent.util as ut
 
 
 class CompositeActivation(torch.nn.Module):
@@ -31,7 +30,7 @@ class CompositeActivation(torch.nn.Module):
 
 def cppn(size, num_output_channels=3, num_hidden_channels=24, num_layers=8,
          activation_fn=CompositeActivation, normalize=False,
-         device=DEFAULT_DEVICE):
+         device=ut.DEFAULT_DEVICE):
 
     r = 3 ** 0.5
 

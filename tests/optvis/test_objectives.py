@@ -21,14 +21,14 @@ import torch
 from lucent.util import set_seed
 from lucent.optvis import objectives, param, render
 from lucent.modelzoo import inceptionv1
-from lucent.util import DEFAULT_DEVICE
+import lucent.util as ut
 
 
 set_seed(137)
 
 
 NUM_STEPS = 5
-device = torch.device(DEFAULT_DEVICE)
+device = torch.device(ut.DEFAULT_DEVICE)
 
 @pytest.fixture
 def inceptionv1_model():

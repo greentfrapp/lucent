@@ -2,10 +2,12 @@ import torch
 
 from lucent.optvis import render, param
 from lucent.modelzoo import inceptionv1
+import lucent.util as ut
 
 def main():
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # ut.set_default_device("cuda:0") # or mps or cpu
+    device = ut.DEFAULT_DEVICE
     model = inceptionv1(pretrained=True)
     model.to(device).eval()
 
