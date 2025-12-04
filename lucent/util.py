@@ -24,9 +24,10 @@ import random
 
 DEFAULT_DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def set_default_device(backend_name: str):
+def set_default_device(backend_name: str) -> torch.device:
     global DEFAULT_DEVICE
     DEFAULT_DEVICE = torch.device(backend_name)
+    return DEFAULT_DEVICE
 
 def set_seed(seed):
     # Set global seeds to for reproducibility
